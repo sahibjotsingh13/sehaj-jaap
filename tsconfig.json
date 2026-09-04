@@ -27,7 +27,7 @@
         "./*"
       ],
       "#db": [
-        "./db/vercel.ts"
+        "./db/index.ts"
       ]
     },
     "plugins": [

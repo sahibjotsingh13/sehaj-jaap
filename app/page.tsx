@@ -21,7 +21,10 @@ import {
   History,
   Link2,
   LogOut,
+  Menu,
   MousePointerClick,
+  PanelLeftClose,
+  PanelLeftOpen,
   Pause,
   Play,
   RotateCcw,
@@ -52,6 +55,13 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
+import {
   NativeSelect,
   NativeSelectOption,
 } from '@/components/ui/native-select';
@@ -64,6 +74,12 @@ type View = 'jaap' | 'sangat' | 'focus' | 'progress' | 'more' | 'summary';
 type FocusMode = 'timer' | 'target' | 'both' | 'paced';
 type Privacy = 'exact' | 'practiced' | 'private';
 
+type Account = {
+  id: string;
+  username: string;
+  displayName: string;
+};
+
 type Settings = {
   locale: Locale;
   malaSize: number;
@@ -73,6 +89,7 @@ type Settings = {
   soundCue: boolean;
   vibrationCue: boolean;
   visualPulse: boolean;
+  sidebarOpen: boolean;
 };
 
 type DayRecord = {
@@ -98,7 +115,6 @@ type Summary = SavedSession & {
 type Membership = {
   code: string;
   memberId: string;
-  memberToken: string;
   groupName: string;
   memberName: string;
   privacy: Privacy;
@@ -136,6 +152,7 @@ type IncrementAction = {
 type PersistedSnapshot = {
   version: 1;
   onboarded: boolean;
+  account?: Account | null;
   settings: Settings;
   records: Record<string, DayRecord>;
   sessions: SavedSession[];
@@ -155,10 +172,24 @@ const DEFAULT_SETTINGS: Settings = {
   soundCue: false,
   vibrationCue: false,
   visualPulse: true,
+  sidebarOpen: true,
 };
 
 const STORAGE_KEY = 'sehaj-jaap-state-v1';
+const LAST_ACCOUNT_KEY = 'sehaj-jaap-last-account';
 const DB_NAME = 'sehaj-jaap';
+
+async function readApiJson<T extends object>(response: Response): Promise<T> {
+  const body = await response.text();
+  if (!body.trim()) {
+    throw new Error('The service returned an empty response. Please try again.');
+  }
+  try {
+    return JSON.parse(body) as T;
+  } catch {
+    throw new Error('The service returned an invalid response. Please try again.');
+  }
+}
 const STORE_NAME = 'state';
 let openDatabasePromise: Promise<IDBDatabase> | null = null;
 
@@ -201,21 +232,21 @@ function openDatabase() {
   return openDatabasePromise;
 }
 
-async function readStoredState() {
+async function readStoredState(slot = 'app') {
   const database = await openDatabase();
   return new Promise<PersistedSnapshot | null>((resolve, reject) => {
     const transaction = database.transaction(STORE_NAME, 'readonly');
-    const request = transaction.objectStore(STORE_NAME).get('app');
+    const request = transaction.objectStore(STORE_NAME).get(slot);
     request.onsuccess = () => resolve((request.result as PersistedSnapshot | undefined) ?? null);
     request.onerror = () => reject(request.error);
   });
 }
 
-async function writeStoredState(snapshot: PersistedSnapshot) {
+async function writeStoredState(snapshot: PersistedSnapshot, slot = 'app') {
   const database = await openDatabase();
   return new Promise<void>((resolve, reject) => {
     const transaction = database.transaction(STORE_NAME, 'readwrite');
-    transaction.objectStore(STORE_NAME).put(snapshot, 'app');
+    transaction.objectStore(STORE_NAME).put(snapshot, slot);
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error);
   });
@@ -251,7 +282,7 @@ function Panel({
   return (
     <section
       className={cn(
-        'rounded-[28px] border border-[color:var(--line)] bg-card shadow-[0_18px_55px_rgba(23,50,77,.06)]',
+        'panel-surface rounded-[28px] border border-[color:var(--line)] bg-card shadow-[0_18px_55px_rgba(23,50,77,.06)]',
         className,
       )}
     >
@@ -272,7 +303,7 @@ function SettingRow({
   children: ReactNode;
 }) {
   return (
-    <div className="flex min-h-[74px] items-center gap-4 border-b border-[color:var(--line)] py-4 last:border-b-0">
+    <div className="setting-row flex min-h-[74px] items-center gap-4 border-b border-[color:var(--line)] py-4 last:border-b-0">
       <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-secondary text-primary">
         {icon}
       </span>
@@ -287,6 +318,71 @@ function SettingRow({
   );
 }
 
+function HeritageCard({
+  src,
+  alt,
+  eyebrow,
+  title,
+  description,
+  credit,
+  sourceUrl,
+  className,
+  imageClassName,
+  priority = false,
+}: {
+  src: string;
+  alt: string;
+  eyebrow: string;
+  title: string;
+  description: string;
+  credit: string;
+  sourceUrl: string;
+  className?: string;
+  imageClassName?: string;
+  priority?: boolean;
+}) {
+  return (
+    <article
+      className={cn(
+        'heritage-card group relative isolate min-h-[260px] overflow-hidden rounded-[28px] border border-white/20 bg-primary text-white shadow-[0_22px_60px_rgba(16,40,46,.16)]',
+        className,
+      )}
+    >
+      <Image
+        alt={alt}
+        className={cn('heritage-card-image object-cover', imageClassName)}
+        fill
+        priority={priority}
+        sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 420px"
+        src={src}
+      />
+      <div aria-hidden="true" className="heritage-card-overlay absolute inset-0" />
+      <div className="relative z-10 flex min-h-[inherit] flex-col justify-end p-5 sm:p-6">
+        <span className="mb-auto grid size-10 place-items-center rounded-full border border-white/25 bg-[#143b44]/45 font-gurmukhi text-lg text-[color:var(--gold-light)] backdrop-blur-md">
+          ੴ
+        </span>
+        <p className="text-[11px] font-semibold tracking-[.15em] text-white/70 uppercase">
+          {eyebrow}
+        </p>
+        <h3 className="mt-1 font-heading text-xl font-semibold tracking-[-.02em] sm:text-2xl">
+          {title}
+        </h3>
+        <p className="sr-only">
+          {description}
+        </p>
+        <a
+          className="heritage-credit mt-4 w-fit text-[11px] text-white/62 underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+          href={sourceUrl}
+          rel="noreferrer"
+          target="_blank"
+        >
+          {credit}
+        </a>
+      </div>
+    </article>
+  );
+}
+
 export default function Home() {
   const [settings, setSettings] = useState(DEFAULT_SETTINGS);
   const [records, setRecords] = useState<Record<string, DayRecord>>({});
@@ -298,10 +394,21 @@ export default function Home() {
   const [incrementStack, setIncrementStack] = useState<IncrementAction[]>([]);
   const [onboarded, setOnboarded] = useState(false);
   const [hydrated, setHydrated] = useState(false);
-  const [showWelcome, setShowWelcome] = useState(false);
   const [storageWarning, setStorageWarning] = useState(false);
 
+  const [account, setAccount] = useState<Account | null>(null);
+  const [accountChecked, setAccountChecked] = useState(false);
+  const [accountMode, setAccountMode] = useState<'login' | 'register'>('login');
+  const [accountUsername, setAccountUsername] = useState('');
+  const [accountPassword, setAccountPassword] = useState('');
+  const [accountDisplayName, setAccountDisplayName] = useState('');
+  const [accountLoading, setAccountLoading] = useState(false);
+  const [accountError, setAccountError] = useState('');
+  const [stateOwnerId, setStateOwnerId] = useState<string | null>(null);
+  const [claimLocalPractice, setClaimLocalPractice] = useState(true);
+
   const [activeView, setActiveView] = useState<View>('jaap');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [paused, setPaused] = useState(false);
   const [notice, setNotice] = useState('');
   const [online, setOnline] = useState(
@@ -328,7 +435,6 @@ export default function Home() {
   const [groupError, setGroupError] = useState('');
   const [groupMode, setGroupMode] = useState<'join' | 'create'>('join');
   const [groupName, setGroupName] = useState('Family Sangat');
-  const [memberName, setMemberName] = useState('');
   const [inviteInput, setInviteInput] = useState('');
   const [groupGoal, setGroupGoal] = useState(50000);
   const [privacy, setPrivacy] = useState<Privacy>('exact');
@@ -364,6 +470,49 @@ export default function Home() {
     '--progress': String(progress * 3.6) + 'deg',
   } as React.CSSProperties;
 
+  function applyPersonalSnapshot(
+    saved: PersistedSnapshot | null,
+    ownerId: string,
+    serverMembership: Membership | null,
+  ) {
+    if (saved?.version === 1) {
+      setSettings({ ...DEFAULT_SETTINGS, ...saved.settings });
+      setRecords(saved.records ?? {});
+      setSessions(saved.sessions ?? []);
+      setGroupQueue(saved.groupQueue ?? []);
+      setSessionCount(saved.sessionCount ?? 0);
+      setSessionStartedAt(saved.sessionStartedAt ?? null);
+      setIncrementStack(saved.incrementStack ?? []);
+      setOnboarded(true);
+    } else {
+      setRecords({});
+      setSessions([]);
+      setGroupQueue([]);
+      setSessionCount(0);
+      setSessionStartedAt(null);
+      setIncrementStack([]);
+      setOnboarded(true);
+    }
+    setMembership(serverMembership);
+    setStateOwnerId(ownerId);
+  }
+
+  async function readAccountSnapshot(accountId: string) {
+    const slot = 'account:' + accountId;
+    try {
+      const stored = await readStoredState(slot);
+      if (stored) return stored;
+    } catch {
+      setStorageWarning(true);
+    }
+    try {
+      const fallback = localStorage.getItem(STORAGE_KEY + ':' + accountId);
+      return fallback ? (JSON.parse(fallback) as PersistedSnapshot) : null;
+    } catch {
+      return null;
+    }
+  }
+
   useEffect(() => {
     let active = true;
     void (async () => {
@@ -384,17 +533,26 @@ export default function Home() {
       }
       if (!active) return;
 
+      let lastAccount: Account | null = null;
+      try {
+        const rawAccount = localStorage.getItem(LAST_ACCOUNT_KEY);
+        lastAccount = rawAccount ? (JSON.parse(rawAccount) as Account) : null;
+      } catch {
+        lastAccount = null;
+      }
+
       if (saved?.version === 1) {
         setSettings({ ...DEFAULT_SETTINGS, ...saved.settings });
         setRecords(saved.records ?? {});
         setSessions(saved.sessions ?? []);
-        setMembership(saved.membership ?? null);
+        setAccount(saved.account ?? lastAccount);
+        setStateOwnerId(saved.account?.id ?? null);
+        setMembership(saved.account ? (saved.membership ?? null) : null);
         setGroupQueue(saved.groupQueue ?? []);
         setSessionCount(saved.sessionCount ?? 0);
         setSessionStartedAt(saved.sessionStartedAt ?? null);
         setIncrementStack(saved.incrementStack ?? []);
         setOnboarded(Boolean(saved.onboarded));
-        setShowWelcome(!saved.onboarded);
       } else {
         const legacyCount = Number(localStorage.getItem('sehaj-jaap-count') || 0);
         if (Number.isFinite(legacyCount) && legacyCount > 0) {
@@ -407,7 +565,6 @@ export default function Home() {
             },
           });
         }
-        setShowWelcome(true);
       }
 
       const invite = new URLSearchParams(window.location.search)
@@ -419,7 +576,6 @@ export default function Home() {
         setInviteInput(invite);
         setActiveView('sangat');
         setGroupMode('join');
-        setShowWelcome(false);
       }
       setHydrated(true);
     })();
@@ -430,10 +586,11 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    if (!hydrated) return;
+    if (!hydrated || !account || stateOwnerId !== account.id) return;
     const snapshot: PersistedSnapshot = {
       version: 1,
       onboarded,
+      account,
       settings,
       records,
       sessions,
@@ -443,12 +600,15 @@ export default function Home() {
       sessionStartedAt,
       incrementStack,
     };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+    const slot = 'account:' + account.id;
+    localStorage.setItem(STORAGE_KEY + ':' + account.id, JSON.stringify(snapshot));
+    localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify(account));
     const timeout = window.setTimeout(() => {
-      void writeStoredState(snapshot).catch(() => setStorageWarning(true));
+      void writeStoredState(snapshot, slot).catch(() => setStorageWarning(true));
     }, 180);
     return () => window.clearTimeout(timeout);
   }, [
+    account,
     groupQueue,
     hydrated,
     incrementStack,
@@ -458,8 +618,62 @@ export default function Home() {
     sessionCount,
     sessionStartedAt,
     sessions,
+    stateOwnerId,
     settings,
   ]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    let active = true;
+    void fetch('/api/sangat?account=1', { cache: 'no-store' })
+      .then(async (response) => {
+        const payload = await readApiJson<{
+          account?: Account;
+          membership?: Membership | null;
+        }>(response);
+        if (!active) return;
+        if (response.ok && payload.account) {
+          const verifiedAccount = payload.account;
+          if (stateOwnerId !== verifiedAccount.id) {
+            const saved = await readAccountSnapshot(verifiedAccount.id);
+            if (!active) return;
+            applyPersonalSnapshot(
+              saved,
+              verifiedAccount.id,
+              payload.membership ?? null,
+            );
+          } else {
+            setMembership(payload.membership ?? null);
+          }
+          setAccount((current) =>
+            current?.id === verifiedAccount.id &&
+            current.username === verifiedAccount.username &&
+            current.displayName === verifiedAccount.displayName
+              ? current
+              : verifiedAccount,
+          );
+          localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify(verifiedAccount));
+        } else {
+          setAccount(null);
+          setMembership(null);
+          setGroupQueue([]);
+          setStateOwnerId(null);
+          localStorage.removeItem(LAST_ACCOUNT_KEY);
+        }
+      })
+      .catch(async () => {
+        if (account && stateOwnerId !== account.id) {
+          const saved = await readAccountSnapshot(account.id);
+          if (active) applyPersonalSnapshot(saved, account.id, saved?.membership ?? null);
+        }
+      })
+      .finally(() => {
+        if (active) setAccountChecked(true);
+      });
+    return () => {
+      active = false;
+    };
+  }, [account, hydrated, stateOwnerId]);
 
   useEffect(() => {
     const update = () => setOnline(navigator.onLine);
@@ -590,10 +804,10 @@ export default function Home() {
           encodeURIComponent(today),
         { cache: 'no-store' },
       );
-      const payload = (await response.json()) as {
+      const payload = await readApiJson<{
         group?: GroupData;
         error?: string;
-      };
+      }>(response);
       if (!response.ok || !payload.group) {
         throw new Error(payload.error || 'Could not load this Sangat.');
       }
@@ -615,17 +829,15 @@ export default function Home() {
         body: JSON.stringify({
           action: 'contribute',
           code: currentMembership.code,
-          memberId: currentMembership.memberId,
-          memberToken: currentMembership.memberToken,
           events: queue,
         }),
         keepalive: true,
       });
-      const payload = (await response.json()) as {
+      const payload = await readApiJson<{
         acceptedIds?: string[];
         group?: GroupData;
         error?: string;
-      };
+      }>(response);
       if (!response.ok || !payload.acceptedIds) {
         throw new Error(payload.error || 'Sync paused');
       }
@@ -839,6 +1051,91 @@ export default function Home() {
     }
   }
 
+  async function submitAccount(event: SyntheticEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAccountLoading(true);
+    setAccountError('');
+    try {
+      const response = await fetch('/api/sangat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: accountMode,
+          username: accountUsername,
+          password: accountPassword,
+          displayName: accountDisplayName,
+        }),
+      });
+      const payload = await readApiJson<{
+        account?: Account;
+        membership?: Membership | null;
+        error?: string;
+      }>(response);
+      if (!response.ok || !payload.account) {
+        throw new Error(payload.error || 'Could not open your account.');
+      }
+      if (accountMode === 'login') {
+        const saved = await readAccountSnapshot(payload.account.id);
+        applyPersonalSnapshot(
+          saved,
+          payload.account.id,
+          payload.membership ?? null,
+        );
+      } else if (claimLocalPractice) {
+        setMembership(null);
+        setGroupQueue([]);
+        setStateOwnerId(payload.account.id);
+      } else {
+        applyPersonalSnapshot(null, payload.account.id, null);
+      }
+      setAccount(payload.account);
+      localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify(payload.account));
+      setAccountPassword('');
+      setOnboarded(true);
+      if (inviteInput.length === 12) {
+        setActiveView('sangat');
+        setGroupMode('join');
+      }
+      setNotice(
+        accountMode === 'register'
+          ? tr('Your free account is ready', 'ਤੁਹਾਡਾ ਮੁਫ਼ਤ ਖਾਤਾ ਤਿਆਰ ਹੈ')
+          : tr('Welcome back', 'ਜੀ ਆਇਆਂ ਨੂੰ'),
+      );
+    } catch (error) {
+      setAccountError(
+        error instanceof Error
+          ? error.message
+          : tr('Please try again.', 'ਕਿਰਪਾ ਕਰਕੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।'),
+      );
+    } finally {
+      setAccountLoading(false);
+    }
+  }
+
+  async function signOut() {
+    try {
+      await fetch('/api/sangat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'logout' }),
+      });
+    } finally {
+      setAccount(null);
+      setMembership(null);
+      setGroupData(null);
+      setGroupQueue([]);
+      setRecords({});
+      setSessions([]);
+      setSessionCount(0);
+      setSessionStartedAt(null);
+      setIncrementStack([]);
+      setStateOwnerId(null);
+      setAccountPassword('');
+      setActiveView('jaap');
+      localStorage.removeItem(LAST_ACCOUNT_KEY);
+    }
+  }
+
   async function submitSangat(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
     setGroupLoading(true);
@@ -852,15 +1149,14 @@ export default function Home() {
           action,
           code: inviteInput,
           groupName,
-          memberName,
           dailyGoal: groupGoal,
           privacy,
         }),
       });
-      const payload = (await response.json()) as {
+      const payload = await readApiJson<{
         membership?: Membership;
         error?: string;
-      };
+      }>(response);
       if (!response.ok || !payload.membership) {
         throw new Error(payload.error || 'Could not join this Sangat.');
       }
@@ -1089,6 +1385,202 @@ export default function Home() {
     return () => lifecycle.abort();
   }, []);
 
+  if (!hydrated || !accountChecked) {
+    return (
+      <main className="auth-shell grid min-h-dvh place-items-center px-5 py-10 text-foreground">
+        <div className="text-center">
+          <span className="mx-auto grid size-16 place-items-center rounded-full bg-primary text-3xl text-primary-foreground shadow-[0_18px_45px_rgba(28,53,58,.2)]">
+            🪯
+          </span>
+          <p className="mt-5 font-gurmukhi text-3xl font-semibold text-primary">ਵਾਹਿਗੁਰੂ</p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {tr('Preparing your peaceful space…', 'ਤੁਹਾਡੀ ਸ਼ਾਂਤ ਥਾਂ ਤਿਆਰ ਹੋ ਰਹੀ ਹੈ…')}
+          </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!account) {
+    return (
+      <main className="auth-shell min-h-dvh px-4 py-4 text-foreground sm:px-7 sm:py-7 lg:grid lg:place-items-center">
+        <div className="mx-auto grid w-full max-w-[1160px] overflow-hidden rounded-[32px] border border-white/55 bg-card shadow-[0_28px_90px_rgba(48,42,24,.14)] lg:min-h-[720px] lg:grid-cols-[1.08fr_.92fr]">
+          <section className="auth-visual relative isolate min-h-[290px] overflow-hidden bg-primary text-white sm:min-h-[360px] lg:min-h-full">
+            <Image
+              alt="Sri Harmandir Sahib reflected in the sarovar"
+              className="object-cover"
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 55vw"
+              src="/golden-temple.jpg"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#122f35]/95 via-[#173942]/45 to-[#9a7330]/10" />
+            <div className="relative z-10 flex min-h-[inherit] flex-col p-6 sm:p-9 lg:min-h-full lg:p-12">
+              <div className="flex items-center gap-3">
+                <span className="grid size-12 place-items-center rounded-full border border-white/25 bg-white/10 text-2xl backdrop-blur-md">🪯</span>
+                <div>
+                  <p className="font-heading text-xl font-semibold">Sehaj Jaap</p>
+                  <p className="font-gurmukhi text-sm text-white/65">ਸਹਿਜ ਜਾਪ</p>
+                </div>
+              </div>
+              <div className="mt-auto max-w-lg pt-14">
+                <p className="font-gurmukhi text-4xl font-semibold text-[color:var(--gold-light)] sm:text-5xl">ਵਾਹਿਗੁਰੂ</p>
+              </div>
+            </div>
+          </section>
+
+          <section className="flex flex-col justify-center p-6 sm:p-10 lg:p-12">
+            <div className="mb-8 flex items-center justify-between gap-4">
+              <div>
+                <p className="eyebrow">{tr('Free for everyone', 'ਸਭ ਲਈ ਮੁਫ਼ਤ')}</p>
+                <h2 className="font-heading text-3xl font-semibold tracking-[-.035em]">
+                  {accountMode === 'login'
+                    ? tr('Welcome back', 'ਜੀ ਆਇਆਂ ਨੂੰ')
+                    : tr('Create your account', 'ਆਪਣਾ ਖਾਤਾ ਬਣਾਓ')}
+                </h2>
+              </div>
+              <div className="flex rounded-full border border-[color:var(--line)] bg-secondary/70 p-1 text-xs">
+                <button
+                  className={cn('rounded-full px-3 py-2', locale === 'en' && 'bg-card shadow-sm')}
+                  onClick={() => setSettings((value) => ({ ...value, locale: 'en' }))}
+                  type="button"
+                >
+                  EN
+                </button>
+                <button
+                  className={cn('rounded-full px-3 py-2', locale === 'pa' && 'bg-card shadow-sm')}
+                  onClick={() => setSettings((value) => ({ ...value, locale: 'pa' }))}
+                  type="button"
+                >
+                  ਪੰ
+                </button>
+              </div>
+            </div>
+
+            <div className="mb-7 grid grid-cols-2 rounded-2xl bg-secondary p-1">
+              <button
+                className={cn('rounded-xl px-3 py-3 text-sm font-semibold', accountMode === 'login' && 'bg-card shadow-sm')}
+                onClick={() => {
+                  setAccountMode('login');
+                  setAccountError('');
+                }}
+                type="button"
+              >
+                {tr('Sign in', 'ਸਾਈਨ ਇਨ')}
+              </button>
+              <button
+                className={cn('rounded-xl px-3 py-3 text-sm font-semibold', accountMode === 'register' && 'bg-card shadow-sm')}
+                onClick={() => {
+                  setAccountMode('register');
+                  setAccountError('');
+                }}
+                type="button"
+              >
+                {tr('Create account', 'ਖਾਤਾ ਬਣਾਓ')}
+              </button>
+            </div>
+
+            <form className="grid gap-5" onSubmit={submitAccount}>
+              {accountMode === 'register' && (
+                <label className="grid gap-2">
+                  <span className="field-label">{tr('Your name', 'ਤੁਹਾਡਾ ਨਾਮ')}</span>
+                  <input
+                    autoComplete="name"
+                    className="text-input"
+                    maxLength={48}
+                    onChange={(event) => setAccountDisplayName(event.target.value)}
+                    placeholder={tr('e.g. Gurpreet Singh', 'ਜਿਵੇਂ ਗੁਰਪ੍ਰੀਤ ਸਿੰਘ')}
+                    required
+                    value={accountDisplayName}
+                  />
+                </label>
+              )}
+              <label className="grid gap-2">
+                <span className="field-label">{tr('Unique username', 'ਵੱਖਰਾ ਯੂਜ਼ਰਨੇਮ')}</span>
+                <input
+                  autoCapitalize="none"
+                  autoComplete="username"
+                  className="text-input"
+                  maxLength={24}
+                  minLength={3}
+                  onChange={(event) =>
+                    setAccountUsername(
+                      event.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''),
+                    )
+                  }
+                  pattern="[a-z0-9_]{3,24}"
+                  placeholder="gurpreet_ji"
+                  required
+                  spellCheck={false}
+                  value={accountUsername}
+                />
+              </label>
+              <label className="grid gap-2">
+                <span className="field-label">{tr('Password', 'ਪਾਸਵਰਡ')}</span>
+                <input
+                  autoComplete={accountMode === 'login' ? 'current-password' : 'new-password'}
+                  className="text-input"
+                  maxLength={128}
+                  minLength={accountMode === 'register' ? 8 : undefined}
+                  onChange={(event) => setAccountPassword(event.target.value)}
+                  placeholder={accountMode === 'register' ? tr('8 or more characters', '8 ਜਾਂ ਵੱਧ ਅੱਖਰ') : '••••••••'}
+                  required
+                  type="password"
+                  value={accountPassword}
+                />
+              </label>
+
+              {accountMode === 'register' && (
+                <label className="flex items-start gap-3 rounded-2xl bg-secondary/65 p-4 text-sm leading-5">
+                  <input
+                    checked={claimLocalPractice}
+                    className="mt-0.5 size-4 accent-[color:var(--saffron)]"
+                    onChange={(event) => setClaimLocalPractice(event.target.checked)}
+                    type="checkbox"
+                  />
+                  <span>
+                    {tr(
+                      'Keep Jaap already counted on this device.',
+                      'ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ ਪਹਿਲਾਂ ਕੀਤਾ ਜਾਪ ਰੱਖੋ।',
+                    )}
+                  </span>
+                </label>
+              )}
+
+              {accountError && (
+                <p className="rounded-2xl bg-[#f8e8e3] px-4 py-3 text-sm text-[#804735]" role="alert">
+                  {accountError}
+                </p>
+              )}
+
+              <button
+                className="primary-action w-full"
+                disabled={
+                  accountLoading ||
+                  accountUsername.length < 3 ||
+                  !accountPassword ||
+                  (accountMode === 'register' && accountDisplayName.trim().length < 2)
+                }
+                type="submit"
+              >
+                <UserRoundCheck aria-hidden="true" />
+                {accountLoading
+                  ? tr('Please wait…', 'ਕਿਰਪਾ ਕਰਕੇ ਉਡੀਕੋ…')
+                  : accountMode === 'login'
+                    ? tr('Sign in securely', 'ਸੁਰੱਖਿਅਤ ਸਾਈਨ ਇਨ')
+                    : tr('Create my free account', 'ਮੇਰਾ ਮੁਫ਼ਤ ਖਾਤਾ ਬਣਾਓ')}
+              </button>
+            </form>
+
+            <p className="mt-5 text-center text-xs font-medium text-muted-foreground">
+              {tr('Always free · No subscription', 'ਹਮੇਸ਼ਾ ਮੁਫ਼ਤ · ਕੋਈ ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਨਹੀਂ')}
+            </p>
+          </section>
+        </div>
+      </main>
+    );
+  }
+
   if (activeFocus) {
     return (
       <main
@@ -1215,88 +1707,157 @@ export default function Home() {
               ? tr('Session complete', 'ਸੈਸ਼ਨ ਪੂਰਾ ਹੋਇਆ')
               : tr('Settings & comfort', 'ਸੈਟਿੰਗਾਂ ਅਤੇ ਸਹੂਲਤ');
 
+  const navigationContent = (mobile = false) => (
+    <>
+      <button
+        className="flex items-center gap-3 rounded-2xl px-2 pr-10 text-left"
+        onClick={() => {
+          setActiveView('jaap');
+          if (mobile) setMobileMenuOpen(false);
+        }}
+        type="button"
+      >
+        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary text-2xl text-primary-foreground shadow-[0_8px_24px_rgba(23,50,77,.18)]">
+          🪯
+        </span>
+        <span>
+          <span className="block font-heading text-[1.12rem] font-semibold tracking-[-.02em]">
+            Sehaj Jaap
+          </span>
+          <span className="block text-xs text-muted-foreground">ਸਹਿਜ ਜਾਪ</span>
+        </span>
+      </button>
+
+      <nav aria-label={mobile ? 'Mobile menu' : 'Primary'} className="mt-12 grid gap-2">
+        {navItems.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            className={cn(
+              'flex min-h-12 items-center gap-3 rounded-2xl px-4 text-left text-[.94rem] font-medium transition',
+              activeView === id || (activeView === 'summary' && id === 'jaap')
+                ? 'bg-primary text-primary-foreground shadow-[0_10px_24px_rgba(23,50,77,.12)]'
+                : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+            )}
+            onClick={() => {
+              setActiveView(id);
+              if (mobile) setMobileMenuOpen(false);
+            }}
+            type="button"
+          >
+            <Icon aria-hidden="true" className="size-[19px]" strokeWidth={1.8} />
+            {label}
+          </button>
+        ))}
+      </nav>
+
+      <Panel className="mt-auto rounded-[22px] p-4 shadow-none">
+        <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
+          <span aria-hidden="true" className="text-lg">🪯</span>
+          {tr(
+            String(currentStreak) + ' day practice streak',
+            String(currentStreak) + ' ਦਿਨਾਂ ਦੀ ਲਗਾਤਾਰ ਸਾਧਨਾ',
+          )}
+        </div>
+        <div className="grid grid-cols-7 gap-1.5" aria-label="Seven day practice">
+          {recentDays.map((day) => (
+            <span
+              key={day.key}
+              className={cn(
+                'grid aspect-square place-items-center rounded-full text-[10px]',
+                day.record.jaap >= settings.streakMinimum
+                  ? 'bg-[color:var(--mist)] text-primary'
+                  : 'bg-secondary text-muted-foreground',
+              )}
+            >
+              {day.record.jaap >= settings.streakMinimum ? 'ੴ' : '·'}
+            </span>
+          ))}
+        </div>
+      </Panel>
+    </>
+  );
+
   return (
     <main
       className={cn(
-        'min-h-dvh bg-background text-foreground',
+        'heritage-shell min-h-dvh text-foreground',
         settings.simpleMode && 'simple-mode',
       )}
     >
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-[232px] border-r border-[color:var(--line)] bg-[color:var(--sidebar)] px-5 py-7 md:flex md:flex-col">
-        <button
-          className="flex items-center gap-3 rounded-2xl px-2 text-left"
-          onClick={() => setActiveView('jaap')}
-          type="button"
-        >
-          <span className="grid size-11 place-items-center rounded-full bg-primary text-2xl text-primary-foreground shadow-[0_8px_24px_rgba(23,50,77,.18)]">
-            🪯
-          </span>
-          <span>
-            <span className="block font-heading text-[1.12rem] font-semibold tracking-[-.02em]">
-              Sehaj Jaap
-            </span>
-            <span className="block text-xs text-muted-foreground">ਸਹਿਜ ਜਾਪ</span>
-          </span>
-        </button>
-
-        <nav aria-label="Primary" className="mt-12 grid gap-2">
-          {navItems.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              className={cn(
-                'flex min-h-12 items-center gap-3 rounded-2xl px-4 text-left text-[.94rem] font-medium transition',
-                activeView === id || (activeView === 'summary' && id === 'jaap')
-                  ? 'bg-primary text-primary-foreground shadow-[0_10px_24px_rgba(23,50,77,.12)]'
-                  : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
-              )}
-              onClick={() => setActiveView(id)}
-              type="button"
-            >
-              <Icon aria-hidden="true" className="size-[19px]" strokeWidth={1.8} />
-              {label}
-            </button>
-          ))}
-        </nav>
-
-        <Panel className="mt-auto rounded-[22px] p-4 shadow-none">
-          <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-            <span aria-hidden="true" className="text-lg">🪯</span>
-            {tr(
-              String(currentStreak) + ' day practice streak',
-              String(currentStreak) + ' ਦਿਨਾਂ ਦੀ ਲਗਾਤਾਰ ਸਾਧਨਾ',
-            )}
-          </div>
-          <div className="grid grid-cols-7 gap-1.5" aria-label="Seven day practice">
-            {recentDays.map((day) => (
-              <span
-                key={day.key}
-                className={cn(
-                  'grid aspect-square place-items-center rounded-full text-[10px]',
-                  day.record.jaap >= settings.streakMinimum
-                    ? 'bg-[color:var(--mist)] text-primary'
-                    : 'bg-secondary text-muted-foreground',
-                )}
-              >
-                {day.record.jaap >= settings.streakMinimum ? 'ੴ' : '·'}
-              </span>
-            ))}
-          </div>
-        </Panel>
+      <aside
+        id="desktop-navigation"
+        className={cn(
+          'fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col border-r border-[color:var(--line)] bg-[color:var(--sidebar)]/95 px-5 py-7 shadow-[12px_0_40px_rgba(23,50,77,.04)] backdrop-blur-xl transition-transform duration-300 md:flex',
+          settings.sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+        )}
+      >
+        {navigationContent()}
       </aside>
 
-      <section className="min-h-dvh md:pl-[232px]">
-        <header className="flex min-h-[74px] items-center justify-between gap-4 px-5 py-3 sm:px-8 lg:px-12">
+      <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+        <SheetContent
+          className="w-[min(88vw,330px)] max-w-none border-[color:var(--line)] bg-[color:var(--sidebar)] px-5 py-7"
+          side="left"
+        >
+          <SheetHeader className="sr-only">
+            <SheetTitle>{tr('Sehaj Jaap menu', 'ਸਹਿਜ ਜਾਪ ਮੀਨੂ')}</SheetTitle>
+            <SheetDescription>
+              {tr('Choose a section of the app.', 'ਐਪ ਦਾ ਭਾਗ ਚੁਣੋ।')}
+            </SheetDescription>
+          </SheetHeader>
+          {navigationContent(true)}
+        </SheetContent>
+      </Sheet>
+
+      <section
+        className={cn(
+          'min-h-dvh transition-[padding] duration-300',
+          settings.sidebarOpen ? 'md:pl-[248px]' : 'md:pl-0',
+        )}
+      >
+        <header className="site-header sticky top-0 z-20 flex min-h-[74px] items-center justify-between gap-3 border-b border-transparent px-4 py-3 sm:px-8 lg:px-12">
           <button
-            className="flex items-center gap-3 md:hidden"
+            aria-label={tr('Open navigation', 'ਨੇਵੀਗੇਸ਼ਨ ਖੋਲ੍ਹੋ')}
+            className="header-icon-button md:hidden"
+            onClick={() => setMobileMenuOpen(true)}
+            type="button"
+          >
+            <Menu aria-hidden="true" className="size-5" />
+          </button>
+          <button
+            className="flex min-w-0 items-center gap-2 md:hidden"
             onClick={() => setActiveView('jaap')}
             type="button"
           >
-            <span className="grid size-10 place-items-center rounded-full bg-primary text-xl text-primary-foreground">
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-lg text-primary-foreground">
               🪯
             </span>
-            <span className="font-heading font-semibold">Sehaj Jaap</span>
+            <span className="mobile-brand-label truncate font-heading font-semibold">Sehaj Jaap</span>
           </button>
-          <div className="hidden md:block">
+          <div className="hidden items-center gap-4 md:flex">
+            <button
+              aria-controls="desktop-navigation"
+              aria-expanded={settings.sidebarOpen}
+              aria-label={
+                settings.sidebarOpen
+                  ? tr('Close sidebar', 'ਸਾਈਡਬਾਰ ਬੰਦ ਕਰੋ')
+                  : tr('Open sidebar', 'ਸਾਈਡਬਾਰ ਖੋਲ੍ਹੋ')
+              }
+              className="header-icon-button"
+              onClick={() =>
+                setSettings((value) => ({
+                  ...value,
+                  sidebarOpen: !value.sidebarOpen,
+                }))
+              }
+              type="button"
+            >
+              {settings.sidebarOpen ? (
+                <PanelLeftClose aria-hidden="true" className="size-5" />
+              ) : (
+                <PanelLeftOpen aria-hidden="true" className="size-5" />
+              )}
+            </button>
             <p className="text-sm text-muted-foreground">{pageTitle}</p>
           </div>
           <div className="ml-auto flex items-center gap-2">
@@ -1417,7 +1978,7 @@ export default function Home() {
                 </div>
                 {!settings.simpleMode && (
                   <>
-                    <div className="grid grid-cols-5 gap-2">
+                    <div className="counter-shortcuts grid gap-2">
                       {[1, 5, 10].map((amount) => (
                         <button
                           key={amount}
@@ -1447,7 +2008,7 @@ export default function Home() {
                         <RotateCcw aria-hidden="true" className="size-4" />
                       </button>
                     </div>
-                    <div className="mt-3 grid grid-cols-3 gap-2">
+                    <div className="counter-actions mt-3 grid grid-cols-3 gap-2">
                       <button
                         className="secondary-control gap-2"
                         onClick={() => setPaused((value) => !value)}
@@ -1533,11 +2094,11 @@ export default function Home() {
                 </span>
               </button>
 
-              <Panel className="overflow-hidden">
+              <Panel className="media-panel group overflow-hidden">
                 <div className="relative h-36">
                   <Image
                     alt="Golden Temple reflected in the sarovar"
-                    className="object-cover"
+                    className="heritage-card-image object-cover"
                     fill
                     sizes="(max-width: 1024px) 100vw, 300px"
                     src="/golden-temple.jpg"
@@ -1582,7 +2143,7 @@ export default function Home() {
                 value={focusMode}
                 onValueChange={(value) => setFocusMode(value as FocusMode)}
               >
-                <TabsList className="focus-tabs h-auto w-full flex-wrap justify-start gap-2 bg-transparent p-0">
+                <TabsList className="focus-tabs h-auto w-full gap-2 bg-transparent p-0">
                   <TabsTrigger value="timer">{tr('Timer', 'ਟਾਈਮਰ')}</TabsTrigger>
                   <TabsTrigger value="target">{tr('Count goal', 'ਗਿਣਤੀ ਟੀਚਾ')}</TabsTrigger>
                   <TabsTrigger value="both">{tr('Timer + goal', 'ਟਾਈਮਰ + ਟੀਚਾ')}</TabsTrigger>
@@ -1741,11 +2302,11 @@ export default function Home() {
               </button>
             </Panel>
 
-            <Panel className="overflow-hidden">
+            <Panel className="media-panel group overflow-hidden">
               <div className="relative min-h-[430px]">
                 <Image
                   alt="Historic painting of Guru Nanak"
-                  className="object-cover object-top"
+                  className="heritage-card-image object-cover object-top"
                   fill
                   sizes="(max-width: 1024px) 100vw, 340px"
                   src="/guru-nanak-historic.jpg"
@@ -1784,11 +2345,11 @@ export default function Home() {
           <div className="mx-auto w-full max-w-[1120px] px-4 pb-28 pt-3 sm:px-8 md:pb-12 lg:px-12">
             {!membership ? (
               <div className="grid gap-6 lg:grid-cols-[.9fr_1.1fr]">
-                <Panel className="overflow-hidden">
+                <Panel className="media-panel group overflow-hidden">
                   <div className="relative min-h-[310px] lg:min-h-[620px]">
                     <Image
                       alt="Golden Temple and sarovar"
-                      className="object-cover"
+                      className="heritage-card-image object-cover"
                       fill
                       sizes="(max-width: 1024px) 100vw, 50vw"
                       src="/golden-temple.jpg"
@@ -1830,8 +2391,8 @@ export default function Home() {
                   </h2>
                   <p className="mt-3 text-muted-foreground">
                     {tr(
-                      'No account is needed. Your private member key stays on this device.',
-                      'ਖਾਤੇ ਦੀ ਲੋੜ ਨਹੀਂ। ਤੁਹਾਡੀ ਨਿੱਜੀ ਮੈਂਬਰ ਕੁੰਜੀ ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ ਰਹਿੰਦੀ ਹੈ।',
+                      'Signed in as @' + account.username + '. Every Sangat member joins with their own free account.',
+                      '@' + account.username + ' ਵਜੋਂ ਸਾਈਨ ਇਨ ਹੈ। ਹਰ ਸੰਗਤ ਮੈਂਬਰ ਆਪਣੇ ਮੁਫ਼ਤ ਖਾਤੇ ਨਾਲ ਜੁੜਦਾ ਹੈ।',
                     )}
                   </p>
 
@@ -1906,18 +2467,6 @@ export default function Home() {
                     )}
 
                     <label className="grid gap-2">
-                      <span className="field-label">{tr('Your name', 'ਤੁਹਾਡਾ ਨਾਮ')}</span>
-                      <input
-                        className="text-input"
-                        maxLength={48}
-                        onChange={(event) => setMemberName(event.target.value)}
-                        placeholder={tr('e.g. Gurpreet', 'ਜਿਵੇਂ ਗੁਰਪ੍ਰੀਤ')}
-                        required
-                        value={memberName}
-                      />
-                    </label>
-
-                    <label className="grid gap-2">
                       <span className="field-label">{tr('Activity privacy', 'ਸਰਗਰਮੀ ਦੀ ਨਿੱਜਤਾ')}</span>
                       <NativeSelect
                         className="w-full"
@@ -1945,7 +2494,6 @@ export default function Home() {
                       className="primary-action w-full"
                       disabled={
                         groupLoading ||
-                        !memberName.trim() ||
                         (groupMode === 'join' && inviteInput.length !== 12)
                       }
                       type="submit"
@@ -1967,11 +2515,11 @@ export default function Home() {
             ) : (
               <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_360px]">
                 <div className="grid gap-6">
-                  <Panel className="overflow-hidden">
+                  <Panel className="media-panel group overflow-hidden">
                     <div className="relative min-h-[300px]">
                       <Image
                         alt="Golden Temple and sarovar"
-                        className="object-cover"
+                        className="heritage-card-image object-cover"
                         fill
                         sizes="(max-width: 1024px) 100vw, 65vw"
                         src="/golden-temple.jpg"
@@ -2450,17 +2998,24 @@ export default function Home() {
                 <span className="grid size-12 place-items-center rounded-full bg-primary text-2xl text-primary-foreground">
                   🪯
                 </span>
-                <h2 className="mt-5 text-xl font-semibold">{tr('Guest practice', 'ਮਹਿਮਾਨ ਅਭਿਆਸ')}</h2>
+                <h2 className="mt-5 text-xl font-semibold">{account.displayName}</h2>
+                <p className="mt-1 text-sm font-medium text-[color:var(--saffron)]">
+                  @{account.username}
+                </p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   {tr(
-                    'Your Jaap and history stay available on this device, including while offline.',
-                    'ਤੁਹਾਡਾ ਜਾਪ ਅਤੇ ਇਤਿਹਾਸ ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ, ਆਫਲਾਈਨ ਵੀ, ਸੰਭਾਲਿਆ ਰਹਿੰਦਾ ਹੈ।',
+                    'Your private Jaap history is separated from other accounts on this device and remains available offline.',
+                    'ਤੁਹਾਡਾ ਨਿੱਜੀ ਜਾਪ ਇਤਿਹਾਸ ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ ਹੋਰ ਖਾਤਿਆਂ ਤੋਂ ਵੱਖਰਾ ਹੈ ਅਤੇ ਆਫਲਾਈਨ ਵੀ ਉਪਲਬਧ ਰਹਿੰਦਾ ਹੈ।',
                   )}
                 </p>
                 <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
                   <ShieldCheck aria-hidden="true" className="size-4" />
                   {tr('Private by default', 'ਮੂਲ ਰੂਪ ਵਿੱਚ ਨਿੱਜੀ')}
                 </div>
+                <button className="outline-action mt-5 w-full" onClick={signOut} type="button">
+                  <LogOut aria-hidden="true" />
+                  {tr('Sign out', 'ਸਾਈਨ ਆਉਟ')}
+                </button>
               </Panel>
 
               {membership && (
@@ -2469,21 +3024,130 @@ export default function Home() {
                   <h2 className="text-xl font-semibold">{membership.groupName}</h2>
                   <p className="mt-2 text-sm text-muted-foreground">{membership.memberName}</p>
                   <button
-                    className="outline-action mt-5 w-full text-[#865447]"
-                    onClick={() => {
-                      setMembership(null);
-                      setGroupData(null);
-                      setGroupQueue([]);
-                      setNotice(tr('Left on this device', 'ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ ਸੰਗਤ ਛੱਡੀ'));
-                    }}
+                    className="outline-action mt-5 w-full"
+                    onClick={() => setActiveView('sangat')}
                     type="button"
                   >
-                    <LogOut aria-hidden="true" />
-                    {tr('Leave on this device', 'ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ ਛੱਡੋ')}
+                    <UsersRound aria-hidden="true" />
+                    {tr('Open my Sangat', 'ਮੇਰੀ ਸੰਗਤ ਖੋਲ੍ਹੋ')}
                   </button>
                 </Panel>
               )}
             </div>
+
+            <section className="heritage-gallery lg:col-span-2">
+              <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+                <div>
+                  <p className="eyebrow">{tr('Sikh heritage', 'ਸਿੱਖ ਵਿਰਾਸਤ')}</p>
+                  <h2 className="page-heading">
+                    {tr('Sacred places, held with care', 'ਪਵਿੱਤਰ ਅਸਥਾਨ, ਸਤਿਕਾਰ ਨਾਲ')}
+                  </h2>
+                </div>
+                <p className="max-w-sm text-sm leading-6 text-muted-foreground">
+                  {tr(
+                    'A quiet visual journey through historic Takhts, Gurdwaras, and freely shared puratan art.',
+                    'ਇਤਿਹਾਸਕ ਤਖ਼ਤਾਂ, ਗੁਰਦੁਆਰਾ ਸਾਹਿਬਾਨ ਅਤੇ ਮੁਫ਼ਤ ਸਾਂਝੀ ਪੁਰਾਤਨ ਕਲਾ ਦੀ ਸ਼ਾਂਤ ਝਲਕ।',
+                  )}
+                </p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-12">
+                <HeritageCard
+                  alt="Sri Harmandir Sahib reflected in the sarovar at Amritsar"
+                  className="lg:col-span-7 lg:min-h-[360px]"
+                  credit="Jasdeep Singh / Wikimedia Commons, CC0"
+                  description={tr(
+                    'Darbar Sahib, Amritsar — a place of seva, kirtan, and welcome.',
+                    'ਦਰਬਾਰ ਸਾਹਿਬ, ਅੰਮ੍ਰਿਤਸਰ — ਸੇਵਾ, ਕੀਰਤਨ ਅਤੇ ਸਾਂਝੀਵਾਲਤਾ ਦਾ ਅਸਥਾਨ।',
+                  )}
+                  eyebrow={tr('Amritsar', 'ਅੰਮ੍ਰਿਤਸਰ')}
+                  priority
+                  sourceUrl="https://commons.wikimedia.org/wiki/File:Golden_Temple_.jpg"
+                  src="/golden-temple.jpg"
+                  title={tr('Sri Harmandir Sahib', 'ਸ੍ਰੀ ਹਰਿਮੰਦਰ ਸਾਹਿਬ')}
+                />
+                <HeritageCard
+                  alt="Takht Sri Hazur Sahib complex in Nanded"
+                  className="lg:col-span-5 lg:min-h-[360px]"
+                  credit="PriyanshuD6 / Wikimedia Commons, CC BY-SA 4.0 · cropped"
+                  description={tr(
+                    'Takht Sachkhand Sri Hazur Abchal Nagar Sahib in Nanded.',
+                    'ਨੰਦੇੜ ਵਿਖੇ ਤਖ਼ਤ ਸੱਚਖੰਡ ਸ੍ਰੀ ਹਜ਼ੂਰ ਅਬਚਲ ਨਗਰ ਸਾਹਿਬ।',
+                  )}
+                  eyebrow={tr('Nanded', 'ਨੰਦੇੜ')}
+                  sourceUrl="https://commons.wikimedia.org/wiki/File:Sri_Hazur_Sahib,_Nanded.jpg"
+                  src="/hazur-sahib.jpg"
+                  title={tr('Takht Sri Hazur Sahib', 'ਤਖ਼ਤ ਸ੍ਰੀ ਹਜ਼ੂਰ ਸਾਹਿਬ')}
+                />
+                <HeritageCard
+                  alt="Sri Hemkund Sahib beside the mountain lake"
+                  className="lg:col-span-5"
+                  credit="Sai Kiran / Wikimedia Commons, CC BY-SA 4.0 · cropped"
+                  description={tr(
+                    'A high-altitude place of remembrance amid still water and mountains.',
+                    'ਸ਼ਾਂਤ ਸਰੋਵਰ ਅਤੇ ਪਹਾੜਾਂ ਵਿਚਕਾਰ ਉੱਚਾਈ ਉੱਤੇ ਸਿਮਰਨ ਦਾ ਅਸਥਾਨ।',
+                  )}
+                  eyebrow={tr('Uttarakhand', 'ਉੱਤਰਾਖੰਡ')}
+                  sourceUrl="https://commons.wikimedia.org/wiki/File:Hemkund_sahib.jpg"
+                  src="/hemkund-sahib.jpg"
+                  title={tr('Sri Hemkund Sahib', 'ਸ੍ਰੀ ਹੇਮਕੁੰਟ ਸਾਹਿਬ')}
+                />
+                <HeritageCard
+                  alt="Takht Sri Kesgarh Sahib at Anandpur Sahib"
+                  className="lg:col-span-7"
+                  credit="Historiansimar / Wikimedia Commons, CC BY-SA 4.0 · cropped"
+                  description={tr(
+                    'The historic Takht at Anandpur Sahib, central to the Khalsa story.',
+                    'ਅਨੰਦਪੁਰ ਸਾਹਿਬ ਦਾ ਇਤਿਹਾਸਕ ਤਖ਼ਤ, ਖ਼ਾਲਸਾ ਇਤਿਹਾਸ ਦਾ ਕੇਂਦਰੀ ਅਸਥਾਨ।',
+                  )}
+                  eyebrow={tr('Anandpur Sahib', 'ਅਨੰਦਪੁਰ ਸਾਹਿਬ')}
+                  sourceUrl="https://commons.wikimedia.org/wiki/File:Takhat_Shri_Kesgarh_Sahib.jpg"
+                  src="/kesgarh-sahib.jpg"
+                  title={tr('Takht Sri Kesgarh Sahib', 'ਤਖ਼ਤ ਸ੍ਰੀ ਕੇਸਗੜ੍ਹ ਸਾਹਿਬ')}
+                />
+                <HeritageCard
+                  alt="Gurdwara Bangla Sahib and sarovar in Delhi"
+                  className="lg:col-span-4"
+                  credit="Vrlobo888 / Wikimedia Commons, public domain"
+                  description={tr(
+                    'A luminous Delhi Gurdwara known for seva and healing remembrance.',
+                    'ਦਿੱਲੀ ਦਾ ਪ੍ਰਕਾਸ਼ਮਾਨ ਗੁਰਦੁਆਰਾ, ਸੇਵਾ ਅਤੇ ਯਾਦ ਨਾਲ ਜੁੜਿਆ ਅਸਥਾਨ।',
+                  )}
+                  eyebrow={tr('Delhi', 'ਦਿੱਲੀ')}
+                  sourceUrl="https://commons.wikimedia.org/wiki/File:Gurdwara_Bangla_Sahib.jpg"
+                  src="/bangla-sahib.jpg"
+                  title={tr('Gurdwara Bangla Sahib', 'ਗੁਰਦੁਆਰਾ ਬੰਗਲਾ ਸਾਹਿਬ')}
+                />
+                <HeritageCard
+                  alt="A 1726 hukamnama of Mata Sahib Devan Ji"
+                  className="lg:col-span-4"
+                  credit="1726 hukamnama / Wikimedia Commons, public domain"
+                  description={tr(
+                    'An original 1726 hukamnama connected with Mata Sahib Devan Ji, preserved as history.',
+                    'ਮਾਤਾ ਸਾਹਿਬ ਦੇਵਾਂ ਜੀ ਨਾਲ ਸੰਬੰਧਿਤ 1726 ਦਾ ਅਸਲ ਹੁਕਮਨਾਮਾ, ਇਤਿਹਾਸ ਵਜੋਂ ਸੰਭਾਲਿਆ।',
+                  )}
+                  eyebrow={tr('Mata Sahib Devan Ji', 'ਮਾਤਾ ਸਾਹਿਬ ਦੇਵਾਂ ਜੀ')}
+                  imageClassName="object-top"
+                  sourceUrl="https://commons.wikimedia.org/wiki/File:Hukamnama_(edict)_of_Mata_Sahib_Devan_(Mata_Sahib_Kaur)_dated_to_10_September_1726_addressed_to_Bhai_Alam_Singh.jpg"
+                  src="/mata-sahib-deva-hukamnama.jpg"
+                  title={tr('A living written legacy', 'ਲਿਖਤੀ ਵਿਰਾਸਤ ਦੀ ਝਲਕ')}
+                />
+                <HeritageCard
+                  alt="Late nineteenth-century puratan painting of the Sikh Gurus with Bhai Bala and Bhai Mardana"
+                  className="lg:col-span-4"
+                  credit="Unknown artist / Wikimedia Commons, public domain"
+                  description={tr(
+                    'A late nineteenth-century puratan work, presented respectfully and without alteration.',
+                    'ਉੱਨੀਵੀਂ ਸਦੀ ਦੇ ਅਖੀਰ ਦੀ ਪੁਰਾਤਨ ਕਲਾ, ਸਤਿਕਾਰ ਨਾਲ ਬਿਨਾਂ ਤਬਦੀਲੀ ਪੇਸ਼ ਕੀਤੀ।',
+                  )}
+                  eyebrow={tr('Puratan art', 'ਪੁਰਾਤਨ ਕਲਾ')}
+                  imageClassName="object-top"
+                  sourceUrl="https://commons.wikimedia.org/wiki/File:Sikh_Gurus_with_Bhai_Bala_and_Bhai_Mardana.jpg"
+                  src="/ten-gurus-puratan.jpg"
+                  title={tr('Sikh Gurus in sangat', 'ਸੰਗਤ ਵਿੱਚ ਗੁਰੂ ਸਾਹਿਬਾਨ')}
+                />
+              </div>
+            </section>
           </div>
         )}
 
@@ -2555,7 +3219,7 @@ export default function Home() {
 
       <nav
         aria-label="Mobile navigation"
-        className="fixed inset-x-3 bottom-3 z-40 grid grid-cols-5 rounded-[24px] border border-white/70 bg-[rgba(248,246,239,.92)] px-2 pb-[max(.5rem,env(safe-area-inset-bottom))] pt-2 shadow-[0_15px_45px_rgba(23,50,77,.15)] backdrop-blur-xl md:hidden"
+        className="fixed inset-x-3 bottom-[max(.75rem,env(safe-area-inset-bottom))] z-40 grid grid-cols-5 rounded-[24px] border border-white/70 bg-[rgba(251,248,239,.94)] p-2 shadow-[0_15px_45px_rgba(23,50,77,.15)] backdrop-blur-xl md:hidden"
       >
         {navItems.map(({ id, label, icon: Icon }) => (
           <button
@@ -2669,59 +3333,6 @@ export default function Home() {
         </DialogContent>
       </Dialog>
 
-      <Dialog open={showWelcome} onOpenChange={setShowWelcome}>
-        <DialogContent
-          className="welcome-dialog overflow-hidden rounded-[30px] border-[color:var(--line)] bg-card p-0 sm:max-w-lg"
-          showCloseButton={false}
-        >
-          <div className="bg-primary px-7 py-9 text-center text-primary-foreground">
-            <span className="text-4xl" aria-hidden="true">🪯</span>
-            <p className="mt-4 font-gurmukhi text-4xl font-semibold text-[color:var(--gold-light)]">ਵਾਹਿਗੁਰੂ</p>
-            <p className="mt-3 text-sm text-white/65">
-              {tr('A peaceful place for daily Simran', 'ਰੋਜ਼ਾਨਾ ਸਿਮਰਨ ਲਈ ਇੱਕ ਸ਼ਾਂਤ ਥਾਂ')}
-            </p>
-          </div>
-          <div className="p-7">
-            <DialogHeader>
-              <DialogTitle className="text-2xl">{tr('Welcome to Sehaj Jaap', 'ਸਹਿਜ ਜਾਪ ਵਿੱਚ ਜੀ ਆਇਆਂ ਨੂੰ')}</DialogTitle>
-              <DialogDescription className="leading-6">
-                {tr(
-                  'Start immediately as a guest. Your Jaap stays on this device and works offline.',
-                  'ਮਹਿਮਾਨ ਵਜੋਂ ਤੁਰੰਤ ਸ਼ੁਰੂ ਕਰੋ। ਤੁਹਾਡਾ ਜਾਪ ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ ਰਹਿੰਦਾ ਹੈ ਅਤੇ ਆਫਲਾਈਨ ਵੀ ਚੱਲਦਾ ਹੈ।',
-                )}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="mt-5 flex rounded-2xl bg-secondary p-1">
-              <button
-                className={cn('flex-1 rounded-xl px-3 py-2.5 text-sm font-semibold', locale === 'en' && 'bg-card shadow-sm')}
-                onClick={() => setSettings((value) => ({ ...value, locale: 'en' }))}
-                type="button"
-              >
-                English
-              </button>
-              <button
-                className={cn('flex-1 rounded-xl px-3 py-2.5 text-sm font-semibold', locale === 'pa' && 'bg-card shadow-sm')}
-                onClick={() => setSettings((value) => ({ ...value, locale: 'pa' }))}
-                type="button"
-              >
-                ਪੰਜਾਬੀ
-              </button>
-            </div>
-            <button
-              className="primary-action mt-5 w-full"
-              onClick={() => {
-                setOnboarded(true);
-                setShowWelcome(false);
-                setActiveView('jaap');
-              }}
-              type="button"
-            >
-              <MousePointerClick aria-hidden="true" />
-              {tr('Continue as guest', 'ਮਹਿਮਾਨ ਵਜੋਂ ਜਾਰੀ ਰੱਖੋ')}
-            </button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </main>
   );
 }

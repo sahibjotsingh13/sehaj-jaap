@@ -8,6 +8,20 @@
       "when": 1788520070008,
       "tag": "0000_conscious_nextwave",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1788543004254,
+      "tag": "0001_blue_moonstone",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1788543590191,
+      "tag": "0002_elite_vanisher",
+      "breakpoints": true
     }
   ]
 }

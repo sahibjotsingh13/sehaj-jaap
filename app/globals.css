@@ -23,37 +23,37 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
   --color-destructive: var(--destructive);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: 'Segoe UI', 'Noto Sans Gurmukhi', 'Raavi', Arial, sans-serif;
   --font-heading: Georgia, 'Noto Serif Gurmukhi', serif;
   --radius-lg: var(--radius);
 }
 
 :root {
-  --background: #f8f6ef;
-  --foreground: #18343b;
-  --card: #fffdf8;
-  --card-foreground: #18343b;
-  --popover: #fffdf8;
-  --popover-foreground: #18343b;
-  --primary: #173b46;
-  --primary-foreground: #fffdf8;
-  --secondary: #e8efec;
-  --secondary-foreground: #173b46;
-  --muted: #edf1ed;
-  --muted-foreground: #667b7d;
-  --accent: #dbe8e5;
-  --accent-foreground: #173b46;
-  --border: #dce4df;
-  --input: #dce4df;
-  --ring: #c9954e;
+  --background: #fbf8ef;
+  --foreground: #283e3e;
+  --card: #fffdf7;
+  --card-foreground: #283e3e;
+  --popover: #fffdf7;
+  --popover-foreground: #283e3e;
+  --primary: #24444a;
+  --primary-foreground: #fffaf0;
+  --secondary: #f2ead8;
+  --secondary-foreground: #29454a;
+  --muted: #f4efe3;
+  --muted-foreground: #6d7771;
+  --accent: #efe0b8;
+  --accent-foreground: #29454a;
+  --border: #e8ddc4;
+  --input: #dfd2b5;
+  --ring: #bd8a32;
   --destructive: #a95645;
-  --line: rgba(23, 59, 70, .105);
-  --sidebar: #f3f4ec;
-  --mist: #e0ece9;
-  --sage: #92aaa0;
-  --saffron: #c58b45;
-  --gold: #c4a460;
-  --gold-light: #e7cc8c;
+  --line: rgba(117, 89, 37, .15);
+  --sidebar: #f8f1df;
+  --mist: #e6eee8;
+  --sage: #8ba397;
+  --saffron: #b77d28;
+  --gold: #c9a24e;
+  --gold-light: #f0d58c;
   --radius: 1rem;
 }
 
@@ -89,10 +89,75 @@
 }
 
 body {
-  font-family: var(--font-geist-sans), 'Noto Sans Gurmukhi', 'Raavi', Arial, sans-serif;
+  font-family: 'Segoe UI', 'Noto Sans Gurmukhi', 'Raavi', Arial, sans-serif;
   background-image:
-    radial-gradient(circle at 75% 10%, rgba(196, 164, 96, .1), transparent 28rem),
-    radial-gradient(circle at 15% 75%, rgba(146, 170, 160, .12), transparent 26rem);
+    radial-gradient(circle at 75% 10%, rgba(201, 162, 78, .16), transparent 28rem),
+    radial-gradient(circle at 15% 75%, rgba(139, 163, 151, .13), transparent 26rem);
+}
+
+.heritage-shell {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(circle at 76% 8%, rgba(201,162,78,.18), transparent 27rem),
+    linear-gradient(rgba(251,248,239,.955), rgba(251,248,239,.925)),
+    url('/hemkund-sahib.jpg');
+  background-position: center, center, center;
+  background-size: auto, cover, cover;
+  background-attachment: scroll, scroll, fixed;
+}
+
+.auth-shell {
+  background-color: var(--background);
+  background-image:
+    radial-gradient(circle at 85% 8%, rgba(201,162,78,.24), transparent 30rem),
+    radial-gradient(circle at 5% 90%, rgba(139,163,151,.18), transparent 28rem),
+    linear-gradient(145deg, #fffaf0, #f4ead3);
+}
+
+.site-header {
+  background: rgba(251, 248, 239, .82);
+  border-color: rgba(117, 89, 37, .1);
+  box-shadow: 0 8px 28px rgba(65, 51, 25, .035);
+  backdrop-filter: blur(18px) saturate(125%);
+}
+
+.header-icon-button {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: rgba(255,253,247,.8);
+  color: var(--primary);
+  box-shadow: 0 8px 22px rgba(62,48,22,.055);
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+}
+
+.panel-surface {
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 220ms ease;
+}
+
+.heritage-card-image {
+  transition: transform 700ms cubic-bezier(.2,.7,.2,1), filter 500ms ease;
+}
+
+.heritage-card { transition: transform 240ms ease, border-color 240ms ease, box-shadow 240ms ease; }
+
+.heritage-card-overlay {
+  background:
+    linear-gradient(180deg, rgba(10,27,31,.08), rgba(11,30,34,.18) 30%, rgba(10,28,32,.94)),
+    linear-gradient(90deg, rgba(178,128,40,.13), transparent 60%);
+  transition: opacity 400ms ease;
+}
+
+.heritage-credit {
+  text-shadow: 0 1px 10px rgba(0,0,0,.35);
+}
+
+.counter-shortcuts {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .font-gurmukhi { font-family: 'Noto Serif Gurmukhi', 'Raavi', Georgia, serif; }
@@ -201,14 +266,25 @@ body {
   font-size: .9rem;
 }
 
+.focus-tabs {
+  display: grid !important;
+  height: auto !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+}
+
 .focus-tabs [data-slot='tabs-trigger'] {
   min-height: 46px;
-  flex: initial;
+  width: 100%;
   border: 1px solid var(--line);
   border-radius: 15px;
   background: rgba(255,255,255,.55);
   padding: .7rem 1rem;
   color: var(--muted-foreground);
+}
+
+@media (min-width: 640px) {
+  .focus-tabs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 }
 
 .focus-tabs [data-slot='tabs-trigger'][data-active] {
@@ -459,9 +535,66 @@ body {
 
 .progress-ring span { position: relative; z-index: 1; font-size: .78rem; font-weight: 750; }
 
+@media (hover: hover) and (pointer: fine) {
+  .header-icon-button:hover {
+    border-color: rgba(183,125,40,.35);
+    background: var(--card);
+    transform: translateY(-1px);
+  }
+
+  .panel-surface:hover {
+    border-color: rgba(183,125,40,.24);
+    box-shadow: 0 22px 64px rgba(76,58,25,.09);
+  }
+
+  .heritage-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(240,213,140,.58);
+    box-shadow: 0 30px 75px rgba(16,40,46,.23);
+  }
+
+  .heritage-card:hover .heritage-card-image,
+  .media-panel:hover .heritage-card-image {
+    transform: scale(1.045);
+    filter: saturate(1.06) contrast(1.02);
+  }
+
+  .heritage-card:hover .heritage-card-overlay { opacity: .92; }
+}
+
+.heritage-card:focus-within {
+  outline: 3px solid color-mix(in srgb, var(--gold) 55%, transparent);
+  outline-offset: 3px;
+}
+
 @media (max-width: 767px) {
-  body { background-image: radial-gradient(circle at 50% 4%, rgba(196,164,96,.09), transparent 20rem); }
-  .counter-panel { min-height: calc(100dvh - 98px); }
+  body { background-image: radial-gradient(circle at 50% 4%, rgba(201,162,78,.12), transparent 20rem); }
+  .heritage-shell {
+    background-attachment: scroll;
+    background-image:
+      radial-gradient(circle at 72% 5%, rgba(201,162,78,.16), transparent 21rem),
+      linear-gradient(rgba(251,248,239,.975), rgba(251,248,239,.95)),
+      url('/hemkund-sahib.jpg');
+  }
+  .counter-panel { min-height: calc(100dvh - 106px); padding-bottom: 6.5rem; }
+  .heritage-card { min-height: 285px; }
+  .auth-visual { background-image: url('/golden-temple.jpg'); background-position: center; background-size: cover; }
+}
+
+@media (max-width: 479px) {
+  .counter-shortcuts { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .counter-actions .secondary-control { padding-inline: .35rem; font-size: .78rem; }
+  .setting-row { flex-wrap: wrap; align-items: flex-start; }
+  .setting-row > :last-child { margin-left: 3.75rem; }
+  .setting-row .setting-number,
+  .setting-row [data-slot='native-select-wrapper'] { width: calc(100% - 3.75rem); }
+  .heritage-gallery .page-heading { font-size: 2rem; }
+}
+
+@media (max-width: 379px) {
+  .mobile-brand-label { display: none; }
+  .site-header { gap: .35rem; padding-inline: .7rem; }
+  .site-header .header-icon-button { width: 38px; height: 38px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

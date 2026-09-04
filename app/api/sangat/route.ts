@@ -5,6 +5,10 @@ export const dynamic = 'force-dynamic';
 const CODE_ALPHABET = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const NAME_LIMIT = 48;
 const GROUP_NAME_LIMIT = 64;
+const USERNAME_LIMIT = 24;
+const SESSION_COOKIE = 'sehaj_session';
+const SESSION_LIFETIME_SECONDS = 60 * 60 * 24 * 30;
+const PASSWORD_ITERATIONS = 600_000;
 
 type Privacy = 'exact' | 'practiced' | 'private';
 
@@ -14,10 +18,19 @@ type ContributionInput = {
   practiceDate?: unknown;
 };
 
-function json(data: unknown, status = 200) {
+type Account = {
+  id: string;
+  username: string;
+  displayName: string;
+};
+
+function json(data: unknown, status = 200, extraHeaders?: HeadersInit) {
+  const headers = new Headers(extraHeaders);
+  headers.set('Cache-Control', 'no-store');
+  headers.set('Content-Type', 'application/json');
   return Response.json(data, {
     status,
-    headers: { 'Cache-Control': 'no-store' },
+    headers,
   });
 }
 
@@ -56,6 +69,10 @@ async function proxySangat(request: Request) {
   });
   const contentType = request.headers.get('content-type');
   if (contentType) headers.set('Content-Type', contentType);
+  const session = cookieValue(request, SESSION_COOKIE);
+  if (session) {
+    headers.set('Cookie', `${SESSION_COOKIE}=${encodeURIComponent(session)}`);
+  }
 
   try {
     const response = await fetch(target, {
@@ -66,12 +83,15 @@ async function proxySangat(request: Request) {
       redirect: 'manual',
     });
 
+    const responseHeaders = new Headers({
+      'Cache-Control': 'no-store',
+      'Content-Type': response.headers.get('content-type') || 'application/json',
+    });
+    const setCookie = response.headers.get('set-cookie');
+    if (setCookie) responseHeaders.set('Set-Cookie', setCookie);
     return new Response(await response.text(), {
       status: response.status,
-      headers: {
-        'Cache-Control': 'no-store',
-        'Content-Type': response.headers.get('content-type') || 'application/json',
-      },
+      headers: responseHeaders,
     });
   } catch {
     return json({ error: 'Online Sangat could not be reached. Please try again.' }, 503);
@@ -80,6 +100,12 @@ async function proxySangat(request: Request) {
 
 function cleanText(value: unknown, max: number) {
   return typeof value === 'string' ? value.trim().replace(/\s+/g, ' ').slice(0, max) : '';
+}
+
+function cleanUsername(value: unknown) {
+  return typeof value === 'string'
+    ? value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, USERNAME_LIMIT)
+    : '';
 }
 
 function cleanCode(value: unknown) {
@@ -100,6 +126,124 @@ function inviteCode() {
 async function hashToken(token: string) {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function bytesToHex(bytes: Uint8Array) {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function hexToBytes(value: string) {
+  const bytes = new Uint8Array(Math.floor(value.length / 2));
+  for (let index = 0; index < bytes.length; index += 1) {
+    bytes[index] = Number.parseInt(value.slice(index * 2, index * 2 + 2), 16);
+  }
+  return bytes;
+}
+
+async function passwordHash(
+  password: string,
+  saltHex: string,
+  iterations = PASSWORD_ITERATIONS,
+) {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits'],
+  );
+  const bits = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      hash: 'SHA-256',
+      salt: hexToBytes(saltHex),
+      iterations,
+    },
+    key,
+    256,
+  );
+  return bytesToHex(new Uint8Array(bits));
+}
+
+function constantTimeEqual(left: string, right: string) {
+  if (left.length !== right.length) return false;
+  const subtle = crypto.subtle as SubtleCrypto & {
+    timingSafeEqual?: (first: BufferSource, second: BufferSource) => boolean;
+  };
+  if (subtle.timingSafeEqual) {
+    return subtle.timingSafeEqual(hexToBytes(left), hexToBytes(right));
+  }
+  let difference = 0;
+  for (let index = 0; index < left.length; index += 1) {
+    difference |= left.charCodeAt(index) ^ right.charCodeAt(index);
+  }
+  return difference === 0;
+}
+
+function randomSecret(bytes = 32) {
+  return bytesToHex(crypto.getRandomValues(new Uint8Array(bytes)));
+}
+
+function cookieValue(request: Request, name: string) {
+  const cookies = request.headers.get('cookie') || '';
+  for (const part of cookies.split(';')) {
+    const [key, ...value] = part.trim().split('=');
+    if (key === name) return decodeURIComponent(value.join('='));
+  }
+  return '';
+}
+
+function sessionCookie(request: Request, token: string, maxAge = SESSION_LIFETIME_SECONDS) {
+  const secure = new URL(request.url).protocol === 'https:' ? '; Secure' : '';
+  return `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${maxAge}${secure}`;
+}
+
+function validPostOrigin(request: Request) {
+  if (request.headers.has('oai-sites-authorization')) return true;
+  const origin = request.headers.get('origin');
+  if (!origin) return true;
+  try {
+    return new URL(origin).origin === new URL(request.url).origin;
+  } catch {
+    return false;
+  }
+}
+
+async function authenticatedAccount(request: Request): Promise<Account | null> {
+  const token = cookieValue(request, SESSION_COOKIE);
+  if (!token) return null;
+  const tokenHash = await hashToken(token);
+  const account = await getDb()
+    .prepare(
+      `SELECT a.id, a.username, a.display_name AS displayName
+       FROM auth_sessions AS s
+       JOIN accounts AS a ON a.id = s.account_id
+       WHERE s.token_hash = ? AND s.expires_at > ?`,
+    )
+    .bind(tokenHash, Date.now())
+    .first<Account>();
+  return account || null;
+}
+
+async function membershipForAccount(accountId: string) {
+  return getDb()
+    .prepare(
+      `SELECT g.invite_code AS code, m.id AS memberId, g.name AS groupName,
+              m.name AS memberName, m.privacy
+       FROM sangat_members AS m
+       JOIN sangat_groups AS g ON g.id = m.group_id
+       WHERE m.account_id = ?
+       ORDER BY m.joined_at DESC
+       LIMIT 1`,
+    )
+    .bind(accountId)
+    .first<{
+      code: string;
+      memberId: string;
+      groupName: string;
+      memberName: string;
+      privacy: Privacy;
+    }>();
 }
 
 function validDate(value: unknown): value is string {
@@ -129,10 +273,11 @@ async function readGroup(code: string, practiceDate: string) {
          COALESCE(SUM(CASE WHEN memberTotal > 0 THEN memberTotal ELSE 0 END), 0) AS total,
          COALESCE(SUM(CASE WHEN memberTotal > 0 THEN 1 ELSE 0 END), 0) AS activeMembers
        FROM (
-         SELECT member_id, SUM(amount) AS memberTotal
-         FROM sangat_contributions
-         WHERE group_id = ? AND practice_date = ?
-         GROUP BY member_id
+         SELECT c.member_id, SUM(c.amount) AS memberTotal
+         FROM sangat_contributions AS c
+         JOIN sangat_members AS m ON m.id = c.member_id
+         WHERE c.group_id = ? AND c.practice_date = ? AND m.account_id IS NOT NULL
+         GROUP BY c.member_id
        )`,
     )
     .bind(group.id, practiceDate)
@@ -145,7 +290,7 @@ async function readGroup(code: string, practiceDate: string) {
        FROM sangat_members AS m
        LEFT JOIN sangat_contributions AS c
          ON c.member_id = m.id AND c.practice_date = ?
-       WHERE m.group_id = ?
+       WHERE m.group_id = ? AND m.account_id IS NOT NULL
        GROUP BY m.id, m.name, m.privacy, m.joined_at
        ORDER BY count DESC, m.joined_at ASC
        LIMIT 100`,
@@ -177,6 +322,16 @@ export async function GET(request: Request) {
   if (proxied) return proxied;
 
   const url = new URL(request.url);
+  if (url.searchParams.get('account') === '1') {
+    const account = await authenticatedAccount(request);
+    if (!account) return json({ error: 'Please sign in to continue.' }, 401);
+    const membership = await membershipForAccount(account.id);
+    return json({ account, membership: membership || null });
+  }
+
+  const account = await authenticatedAccount(request);
+  if (!account) return json({ error: 'Please sign in to open this Sangat.' }, 401);
+
   const code = cleanCode(url.searchParams.get('code'));
   const practiceDate = url.searchParams.get('date');
 
@@ -184,11 +339,47 @@ export async function GET(request: Request) {
     return json({ error: 'A valid Sangat code and date are required.' }, 400);
   }
 
+  const membership = await getDb()
+    .prepare(
+      `SELECT 1
+       FROM sangat_members AS m
+       JOIN sangat_groups AS g ON g.id = m.group_id
+       WHERE m.account_id = ? AND g.invite_code = ?`,
+    )
+    .bind(account.id, code)
+    .first();
+  if (!membership) {
+    const preview = await getDb()
+      .prepare(
+        `SELECT name, daily_goal AS dailyGoal
+         FROM sangat_groups
+         WHERE invite_code = ?`,
+      )
+      .bind(code)
+      .first<{ name: string; dailyGoal: number }>();
+    return preview
+      ? json({
+          group: {
+            code,
+            name: preview.name,
+            dailyGoal: Number(preview.dailyGoal),
+            total: 0,
+            activeMembers: 0,
+            memberCount: 0,
+            members: [],
+          },
+        })
+      : json({ error: 'This invite link is not active.' }, 404);
+  }
+
   const group = await readGroup(code, practiceDate);
   return group ? json({ group }) : json({ error: 'This invite link is not active.' }, 404);
 }
 
 export async function POST(request: Request) {
+  if (!validPostOrigin(request)) {
+    return json({ error: 'This request could not be verified.' }, 403);
+  }
   const proxied = await proxySangat(request);
   if (proxied) return proxied;
 
@@ -202,9 +393,182 @@ export async function POST(request: Request) {
   const db = getDb();
   const action = body.action;
 
+  if (action === 'register') {
+    const username = cleanUsername(body.username);
+    const displayName = cleanText(body.displayName, NAME_LIMIT);
+    const password = typeof body.password === 'string' ? body.password : '';
+
+    if (!/^[a-z0-9_]{3,24}$/.test(username)) {
+      return json(
+        { error: 'Username must be 3–24 letters, numbers, or underscores.' },
+        400,
+      );
+    }
+    if (displayName.length < 2) {
+      return json({ error: 'Please enter your name.' }, 400);
+    }
+    if (password.length < 8 || password.length > 128) {
+      return json({ error: 'Password must be 8–128 characters.' }, 400);
+    }
+
+    const existing = await db
+      .prepare('SELECT 1 FROM accounts WHERE username = ?')
+      .bind(username)
+      .first();
+    if (existing) return json({ error: 'That username is already taken.' }, 409);
+
+    const accountId = crypto.randomUUID();
+    const salt = randomSecret(16);
+    const digest = await passwordHash(password, salt);
+    const token = randomSecret();
+    const tokenHash = await hashToken(token);
+    const now = Date.now();
+    const expiresAt = now + SESSION_LIFETIME_SECONDS * 1000;
+
+    try {
+      await db.batch([
+        db
+          .prepare(
+            `INSERT INTO accounts
+               (id, username, display_name, password_hash, password_salt,
+                password_iterations, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          )
+          .bind(
+            accountId,
+            username,
+            displayName,
+            digest,
+            salt,
+            PASSWORD_ITERATIONS,
+            now,
+          ),
+        db
+          .prepare(
+            `INSERT INTO auth_sessions
+               (id, account_id, token_hash, expires_at, created_at)
+             VALUES (?, ?, ?, ?, ?)`,
+          )
+          .bind(crypto.randomUUID(), accountId, tokenHash, expiresAt, now),
+      ]);
+    } catch {
+      return json({ error: 'That username is already taken.' }, 409);
+    }
+
+    return json(
+      { account: { id: accountId, username, displayName }, membership: null },
+      201,
+      { 'Set-Cookie': sessionCookie(request, token) },
+    );
+  }
+
+  if (action === 'login') {
+    const username = cleanUsername(body.username);
+    const password = typeof body.password === 'string' ? body.password : '';
+    const row = await db
+      .prepare(
+        `SELECT id, username, display_name AS displayName,
+                password_hash AS passwordHash, password_salt AS passwordSalt,
+                password_iterations AS passwordIterations,
+                failed_login_attempts AS failedLoginAttempts,
+                locked_until AS lockedUntil
+         FROM accounts
+         WHERE username = ?`,
+      )
+      .bind(username)
+      .first<
+        Account & {
+          passwordHash: string;
+          passwordSalt: string;
+          passwordIterations: number;
+          failedLoginAttempts: number;
+          lockedUntil: number;
+        }
+      >();
+
+    const digest = await passwordHash(
+      password,
+      row?.passwordSalt || '00000000000000000000000000000000',
+      row?.passwordIterations || PASSWORD_ITERATIONS,
+    );
+    const now = Date.now();
+    if (row && row.lockedUntil > now) {
+      return json({ error: 'Too many attempts. Please try again in 15 minutes.' }, 429);
+    }
+    if (!row || !constantTimeEqual(digest, row.passwordHash)) {
+      if (row) {
+        const nextAttempts = row.failedLoginAttempts + 1;
+        await db
+          .prepare(
+            `UPDATE accounts
+             SET failed_login_attempts = ?, locked_until = ?
+             WHERE id = ?`,
+          )
+          .bind(
+            nextAttempts >= 5 ? 0 : nextAttempts,
+            nextAttempts >= 5 ? now + 15 * 60 * 1000 : 0,
+            row.id,
+          )
+          .run();
+      }
+      return json({ error: 'Username or password is incorrect.' }, 401);
+    }
+
+    const token = randomSecret();
+    const tokenHash = await hashToken(token);
+    await db.batch([
+      db.prepare('DELETE FROM auth_sessions WHERE expires_at <= ?').bind(now),
+      db
+        .prepare(
+          'UPDATE accounts SET failed_login_attempts = 0, locked_until = 0 WHERE id = ?',
+        )
+        .bind(row.id),
+      db
+        .prepare(
+          `INSERT INTO auth_sessions
+             (id, account_id, token_hash, expires_at, created_at)
+           VALUES (?, ?, ?, ?, ?)`,
+        )
+        .bind(
+          crypto.randomUUID(),
+          row.id,
+          tokenHash,
+          now + SESSION_LIFETIME_SECONDS * 1000,
+          now,
+        ),
+    ]);
+    const membership = await membershipForAccount(row.id);
+    return json(
+      {
+        account: { id: row.id, username: row.username, displayName: row.displayName },
+        membership: membership || null,
+      },
+      200,
+      { 'Set-Cookie': sessionCookie(request, token) },
+    );
+  }
+
+  if (action === 'logout') {
+    const token = cookieValue(request, SESSION_COOKIE);
+    if (token) {
+      await db
+        .prepare('DELETE FROM auth_sessions WHERE token_hash = ?')
+        .bind(await hashToken(token))
+        .run();
+    }
+    return json(
+      { ok: true },
+      200,
+      { 'Set-Cookie': sessionCookie(request, '', 0) },
+    );
+  }
+
+  const account = await authenticatedAccount(request);
+  if (!account) return json({ error: 'Please sign in to continue.' }, 401);
+
   if (action === 'create') {
     const groupName = cleanText(body.groupName, GROUP_NAME_LIMIT);
-    const memberName = cleanText(body.memberName, NAME_LIMIT);
+    const memberName = account.displayName;
     const privacy = cleanPrivacy(body.privacy);
     const requestedGoal = Number(body.dailyGoal);
     const dailyGoal = Number.isInteger(requestedGoal)
@@ -245,20 +609,21 @@ export async function POST(request: Request) {
         .bind(groupId, code, groupName, dailyGoal, now),
       db
         .prepare(
-          `INSERT INTO sangat_members (id, group_id, name, token_hash, privacy, joined_at)
-           VALUES (?, ?, ?, ?, ?, ?)`,
+          `INSERT INTO sangat_members
+             (id, group_id, account_id, name, token_hash, privacy, joined_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
         )
-        .bind(memberId, groupId, memberName, tokenHash, privacy, now),
+        .bind(memberId, groupId, account.id, memberName, tokenHash, privacy, now),
     ]);
 
     return json({
-      membership: { code, memberId, memberToken, groupName, memberName, privacy },
+      membership: { code, memberId, groupName, memberName, privacy },
     });
   }
 
   if (action === 'join') {
     const code = cleanCode(body.code);
-    const memberName = cleanText(body.memberName, NAME_LIMIT);
+    const memberName = account.displayName;
     const privacy = cleanPrivacy(body.privacy);
 
     if (code.length !== 12 || memberName.length < 2) {
@@ -271,22 +636,42 @@ export async function POST(request: Request) {
       .first<{ id: string; name: string }>();
     if (!group) return json({ error: 'This invite link is not active.' }, 404);
 
+    const existingMembership = await db
+      .prepare(
+        `SELECT m.id AS memberId, m.name AS memberName, m.privacy
+         FROM sangat_members AS m
+         WHERE m.group_id = ? AND m.account_id = ?`,
+      )
+      .bind(group.id, account.id)
+      .first<{ memberId: string; memberName: string; privacy: Privacy }>();
+    if (existingMembership) {
+      return json({
+        membership: {
+          code,
+          memberId: existingMembership.memberId,
+          groupName: group.name,
+          memberName: existingMembership.memberName,
+          privacy: existingMembership.privacy,
+        },
+      });
+    }
+
     const memberId = crypto.randomUUID();
     const memberToken = crypto.randomUUID();
     const tokenHash = await hashToken(memberToken);
     await db
       .prepare(
-        `INSERT INTO sangat_members (id, group_id, name, token_hash, privacy, joined_at)
-         VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO sangat_members
+           (id, group_id, account_id, name, token_hash, privacy, joined_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
       )
-      .bind(memberId, group.id, memberName, tokenHash, privacy, Date.now())
+      .bind(memberId, group.id, account.id, memberName, tokenHash, privacy, Date.now())
       .run();
 
     return json({
       membership: {
         code,
         memberId,
-        memberToken,
         groupName: group.name,
         memberName,
         privacy,
@@ -296,25 +681,22 @@ export async function POST(request: Request) {
 
   if (action === 'contribute') {
     const code = cleanCode(body.code);
-    const memberId = cleanText(body.memberId, 64);
-    const memberToken = cleanText(body.memberToken, 80);
     const rawEvents = Array.isArray(body.events) ? (body.events as ContributionInput[]) : [];
 
-    if (code.length !== 12 || !memberId || !memberToken || rawEvents.length === 0 || rawEvents.length > 100) {
+    if (code.length !== 12 || rawEvents.length === 0 || rawEvents.length > 100) {
       return json({ error: 'This contribution batch is not valid.' }, 400);
     }
 
-    const tokenHash = await hashToken(memberToken);
     const member = await db
       .prepare(
         `SELECT m.id, m.group_id AS groupId
          FROM sangat_members AS m
          JOIN sangat_groups AS g ON g.id = m.group_id
-         WHERE m.id = ? AND m.token_hash = ? AND g.invite_code = ?`,
+         WHERE m.account_id = ? AND g.invite_code = ?`,
       )
-      .bind(memberId, tokenHash, code)
+      .bind(account.id, code)
       .first<{ id: string; groupId: string }>();
-    if (!member) return json({ error: 'Please rejoin this Sangat to continue.' }, 401);
+    if (!member) return json({ error: 'Please sign in and rejoin this Sangat.' }, 401);
 
     const events = rawEvents.flatMap((event) => {
       const id = cleanText(event.id, 80);

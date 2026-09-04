@@ -1,5 +1,39 @@
 import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
+export const accounts = sqliteTable(
+  'accounts',
+  {
+    id: text('id').primaryKey(),
+    username: text('username').notNull(),
+    displayName: text('display_name').notNull(),
+    passwordHash: text('password_hash').notNull(),
+    passwordSalt: text('password_salt').notNull(),
+    passwordIterations: integer('password_iterations').notNull().default(600000),
+    failedLoginAttempts: integer('failed_login_attempts').notNull().default(0),
+    lockedUntil: integer('locked_until').notNull().default(0),
+    createdAt: integer('created_at').notNull(),
+  },
+  (table) => [uniqueIndex('idx_accounts_username').on(table.username)],
+);
+
+export const authSessions = sqliteTable(
+  'auth_sessions',
+  {
+    id: text('id').primaryKey(),
+    accountId: text('account_id')
+      .notNull()
+      .references(() => accounts.id, { onDelete: 'cascade' }),
+    tokenHash: text('token_hash').notNull(),
+    expiresAt: integer('expires_at').notNull(),
+    createdAt: integer('created_at').notNull(),
+  },
+  (table) => [
+    uniqueIndex('idx_auth_sessions_token_hash').on(table.tokenHash),
+    index('idx_auth_sessions_account_id').on(table.accountId),
+    index('idx_auth_sessions_expires_at').on(table.expiresAt),
+  ],
+);
+
 export const sangatGroups = sqliteTable(
   'sangat_groups',
   {
@@ -19,6 +53,9 @@ export const sangatMembers = sqliteTable(
     groupId: text('group_id')
       .notNull()
       .references(() => sangatGroups.id, { onDelete: 'cascade' }),
+    accountId: text('account_id').references(() => accounts.id, {
+      onDelete: 'cascade',
+    }),
     name: text('name').notNull(),
     tokenHash: text('token_hash').notNull(),
     privacy: text('privacy', { enum: ['exact', 'practiced', 'private'] })
@@ -28,6 +65,10 @@ export const sangatMembers = sqliteTable(
   },
   (table) => [
     index('idx_sangat_members_group_id').on(table.groupId),
+    uniqueIndex('idx_sangat_members_group_account').on(
+      table.groupId,
+      table.accountId,
+    ),
     uniqueIndex('idx_sangat_members_token_hash').on(table.tokenHash),
   ],
 );
