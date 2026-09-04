@@ -181,6 +181,9 @@ const LAST_ACCOUNT_KEY = 'sehaj-jaap-last-account';
 const LOCAL_ACCOUNTS_KEY = 'sehaj-jaap-local-accounts-v1';
 const LOCAL_SESSION_KEY = 'sehaj-jaap-local-session-v1';
 const LOCAL_PASSWORD_ITERATIONS = 210_000;
+const SHARED_ACCOUNT_API =
+  'https://vzkmcodmfxegxzsackfv.supabase.co/functions/v1/sehaj-account';
+const SHARED_ACCOUNT_TOKEN_KEY = 'sehaj-jaap-shared-account-token-v1';
 const DB_NAME = 'sehaj-jaap';
 
 async function readApiJson<T extends object>(response: Response): Promise<T> {
@@ -193,6 +196,32 @@ async function readApiJson<T extends object>(response: Response): Promise<T> {
   } catch {
     throw new Error('The service returned an invalid response. Please try again.');
   }
+}
+
+async function sharedAccountRequest<T extends object>(
+  action: string,
+  input: Record<string, unknown> = {},
+): Promise<{ response: Response; payload: T }> {
+  const token =
+    typeof window === 'undefined'
+      ? ''
+      : localStorage.getItem(SHARED_ACCOUNT_TOKEN_KEY) || '';
+  const response = await fetch(SHARED_ACCOUNT_API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, token, ...input }),
+  });
+  const payload = await readApiJson<T>(response);
+  return { response, payload };
+}
+
+function removeLocalDuplicateAccount(username: string) {
+  const normalized = normalizeLocalUsername(username);
+  const remaining = readLocalAccounts().filter(
+    (item) => item.username !== normalized,
+  );
+  writeLocalAccounts(remaining);
+  localStorage.removeItem(LOCAL_SESSION_KEY);
 }
 type LocalAccountRecord = Account & {
   passwordHash: string;
@@ -761,7 +790,12 @@ export default function Home() {
     localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify(account));
     const timeout = window.setTimeout(() => {
       void writeStoredState(snapshot, slot).catch(() => setStorageWarning(true));
-    }, 180);
+      if (localStorage.getItem(SHARED_ACCOUNT_TOKEN_KEY)) {
+        void sharedAccountRequest<{ ok?: boolean }>('save_state', { snapshot }).catch(
+          () => undefined,
+        );
+      }
+    }, 350);
     return () => window.clearTimeout(timeout);
   }, [
     account,
@@ -782,76 +816,85 @@ export default function Home() {
     if (!hydrated) return;
     let active = true;
 
-    const restoreLocalAccount = async () => {
-      const localAccount = readLocalSessionAccount();
-      if (!active) return;
-
-      if (localAccount) {
-        if (stateOwnerId !== localAccount.id) {
-          const saved = await readAccountSnapshot(localAccount.id);
-          if (!active) return;
-          applyPersonalSnapshot(saved, localAccount.id, saved?.membership ?? null);
+    void (async () => {
+      const token = localStorage.getItem(SHARED_ACCOUNT_TOKEN_KEY);
+      if (!token) {
+        if (active) {
+          setAccount(null);
+          setMembership(null);
+          setGroupQueue([]);
+          setStateOwnerId(null);
+          localStorage.removeItem(LAST_ACCOUNT_KEY);
+          setAccountChecked(true);
         }
-        setAccount((current) =>
-          current?.id === localAccount.id &&
-          current.username === localAccount.username &&
-          current.displayName === localAccount.displayName
-            ? current
-            : localAccount,
-        );
-        localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify(localAccount));
         return;
       }
 
-      setAccount(null);
-      setMembership(null);
-      setGroupQueue([]);
-      setStateOwnerId(null);
-      localStorage.removeItem(LAST_ACCOUNT_KEY);
-    };
-
-    void fetch('/api/sangat?account=1', { cache: 'no-store' })
-      .then(async (response) => {
-        const payload = await readApiJson<{
+      try {
+        const { response, payload } = await sharedAccountRequest<{
           account?: Account;
-          membership?: Membership | null;
-        }>(response);
-        if (!active) return;
+          error?: string;
+        }>('session');
 
-        if (response.ok && payload.account) {
-          const verifiedAccount = payload.account;
-          if (stateOwnerId !== verifiedAccount.id) {
-            const saved = await readAccountSnapshot(verifiedAccount.id);
-            if (!active) return;
-            applyPersonalSnapshot(
-              saved,
-              verifiedAccount.id,
-              payload.membership ?? null,
-            );
-          } else {
-            setMembership(payload.membership ?? null);
-          }
-          setAccount((current) =>
-            current?.id === verifiedAccount.id &&
-            current.username === verifiedAccount.username &&
-            current.displayName === verifiedAccount.displayName
-              ? current
-              : verifiedAccount,
-          );
-          localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify(verifiedAccount));
-        } else {
-          await restoreLocalAccount();
+        if (!active) return;
+        if (!response.ok || !payload.account) {
+          localStorage.removeItem(SHARED_ACCOUNT_TOKEN_KEY);
+          setAccount(null);
+          setMembership(null);
+          setGroupQueue([]);
+          setStateOwnerId(null);
+          localStorage.removeItem(LAST_ACCOUNT_KEY);
+          return;
         }
-      })
-      .catch(restoreLocalAccount)
-      .finally(() => {
+
+        const verifiedAccount = payload.account;
+        const stateResult = await sharedAccountRequest<{
+          snapshot?: PersistedSnapshot | null;
+        }>('load_state');
+
+        if (!active) return;
+        let saved = stateResult.payload.snapshot ?? null;
+        if (!saved) {
+          saved = await readAccountSnapshot(verifiedAccount.id);
+        }
+
+        applyPersonalSnapshot(
+          saved,
+          verifiedAccount.id,
+          saved?.membership ?? null,
+        );
+        setAccount(verifiedAccount);
+        localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify(verifiedAccount));
+        removeLocalDuplicateAccount(verifiedAccount.username);
+      } catch {
+        if (active) {
+          const lastAccountRaw = localStorage.getItem(LAST_ACCOUNT_KEY);
+          if (lastAccountRaw) {
+            try {
+              const lastAccount = JSON.parse(lastAccountRaw) as Account;
+              const saved = await readAccountSnapshot(lastAccount.id);
+              if (active && saved) {
+                applyPersonalSnapshot(
+                  saved,
+                  lastAccount.id,
+                  saved.membership ?? null,
+                );
+                setAccount(lastAccount);
+              }
+            } catch {
+              // Keep the sign-in screen if local recovery is unavailable.
+            }
+          }
+        }
+      } finally {
         if (active) setAccountChecked(true);
-      });
+      }
+    })();
 
     return () => {
       active = false;
     };
-  }, [hydrated, stateOwnerId]);
+  }, [hydrated]);
 
   useEffect(() => {
     const update = () => setOnline(navigator.onLine);
@@ -1238,74 +1281,67 @@ export default function Home() {
 
     try {
       let resolvedAccount: Account | null = null;
-      let resolvedMembership: Membership | null = null;
-      let localFallback = false;
+      let token = '';
+      let remoteSnapshot: PersistedSnapshot | null = null;
 
-      try {
-        const response = await fetch('/api/sangat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: accountMode,
-            username: accountUsername,
-            password: accountPassword,
-            displayName: accountDisplayName,
-          }),
-        });
-        const payload = await readApiJson<{
+      const authenticate = async (
+        action: 'login' | 'register',
+        displayName = accountDisplayName,
+      ) => {
+        const { response, payload } = await sharedAccountRequest<{
           account?: Account;
-          membership?: Membership | null;
+          token?: string;
           error?: string;
-        }>(response);
+        }>(action, {
+          username: accountUsername,
+          password: accountPassword,
+          displayName,
+        });
+        return { response, payload };
+      };
 
-        if (response.ok && payload.account) {
-          resolvedAccount = payload.account;
-          resolvedMembership = payload.membership ?? null;
-          localStorage.removeItem(LOCAL_SESSION_KEY);
-        } else {
-          const legacyOrUnavailable =
-            payload.error === 'Unknown Sangat action.' ||
-            Boolean(payload.error?.includes('valid Sangat code and date')) ||
-            response.status === 503;
+      let result = await authenticate(accountMode);
 
-          if (!legacyOrUnavailable) {
-            throw new Error(payload.error || 'Could not open your account.');
-          }
-          localFallback = true;
+      if (
+        accountMode === 'login' &&
+        result.response.status === 401 &&
+        result.payload.error === 'Username or password is incorrect.'
+      ) {
+        // Migrate a pre-Supabase local account into the single shared account.
+        try {
+          const localAccount = await loginLocalAccount(
+            accountUsername,
+            accountPassword,
+          );
+          result = await authenticate('register', localAccount.displayName);
+        } catch {
+          // No matching legacy account on this device; keep the cloud error.
         }
-      } catch (error) {
-        if (
-          error instanceof Error &&
-          (error.message.includes('already taken') ||
-            error.message.includes('incorrect') ||
-            error.message.includes('Too many attempts') ||
-            error.message.includes('Password must') ||
-            error.message.includes('Username must'))
-        ) {
-          throw error;
-        }
-        localFallback = true;
       }
 
-      if (localFallback) {
-        resolvedAccount =
-          accountMode === 'register'
-            ? await registerLocalAccount(
-                accountUsername,
-                accountDisplayName,
-                accountPassword,
-              )
-            : await loginLocalAccount(accountUsername, accountPassword);
-        resolvedMembership = null;
+      if (!result.response.ok || !result.payload.account || !result.payload.token) {
+        throw new Error(result.payload.error || 'Could not open your account.');
       }
 
-      if (!resolvedAccount) {
-        throw new Error('Could not open your account.');
+      resolvedAccount = result.payload.account;
+      token = result.payload.token;
+      localStorage.setItem(SHARED_ACCOUNT_TOKEN_KEY, token);
+
+      const stateResult = await sharedAccountRequest<{
+        snapshot?: PersistedSnapshot | null;
+      }>('load_state');
+      if (stateResult.response.ok) {
+        remoteSnapshot = stateResult.payload.snapshot ?? null;
       }
 
-      if (accountMode === 'login') {
-        const saved = await readAccountSnapshot(resolvedAccount.id);
-        applyPersonalSnapshot(saved, resolvedAccount.id, resolvedMembership);
+      if (accountMode === 'login' || remoteSnapshot) {
+        const saved =
+          remoteSnapshot ?? (await readAccountSnapshot(resolvedAccount.id));
+        applyPersonalSnapshot(
+          saved,
+          resolvedAccount.id,
+          saved?.membership ?? null,
+        );
       } else if (claimLocalPractice) {
         setMembership(null);
         setGroupQueue([]);
@@ -1316,6 +1352,7 @@ export default function Home() {
 
       setAccount(resolvedAccount);
       localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify(resolvedAccount));
+      removeLocalDuplicateAccount(resolvedAccount.username);
       setAccountPassword('');
       setOnboarded(true);
 
@@ -1326,7 +1363,7 @@ export default function Home() {
 
       setNotice(
         accountMode === 'register'
-          ? tr('Your free account is ready', 'ਤੁਹਾਡਾ ਮੁਫ਼ਤ ਖਾਤਾ ਤਿਆਰ ਹੈ')
+          ? tr('Your shared free account is ready', 'ਤੁਹਾਡਾ ਸਾਂਝਾ ਮੁਫ਼ਤ ਖਾਤਾ ਤਿਆਰ ਹੈ')
           : tr('Welcome back', 'ਜੀ ਆਇਆਂ ਨੂੰ'),
       );
     } catch (error) {
@@ -1342,12 +1379,11 @@ export default function Home() {
 
   async function signOut() {
     try {
-      await fetch('/api/sangat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'logout' }),
-      });
+      if (localStorage.getItem(SHARED_ACCOUNT_TOKEN_KEY)) {
+        await sharedAccountRequest<{ ok?: boolean }>('logout').catch(() => undefined);
+      }
     } finally {
+      localStorage.removeItem(SHARED_ACCOUNT_TOKEN_KEY);
       localStorage.removeItem(LOCAL_SESSION_KEY);
       setAccount(null);
       setMembership(null);
@@ -1726,7 +1762,7 @@ export default function Home() {
                 </label>
               )}
               <label className="grid gap-2">
-                <span className="field-label">{tr('Username', 'ਯੂਜ਼ਰਨੇਮ')}</span>
+                <span className="field-label">{tr('Unique username', 'ਵੱਖਰਾ ਯੂਜ਼ਰਨੇਮ')}</span>
                 <input
                   autoCapitalize="none"
                   autoComplete="username"
@@ -1804,8 +1840,8 @@ export default function Home() {
 
             <p className="mt-5 text-center text-xs font-medium text-muted-foreground">
               {tr(
-                'Always free · No subscription · Account works on this device even if the account server is unavailable',
-                'ਹਮੇਸ਼ਾ ਮੁਫ਼ਤ · ਕੋਈ ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਨਹੀਂ · ਖਾਤਾ ਸਰਵਰ ਉਪਲਬਧ ਨਾ ਹੋਵੇ ਤਾਂ ਵੀ ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ ਖਾਤਾ ਕੰਮ ਕਰਦਾ ਹੈ',
+                'Always free · No subscription · Same account works across your devices',
+                'ਹਮੇਸ਼ਾ ਮੁਫ਼ਤ · ਕੋਈ ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਨਹੀਂ · ਇੱਕੋ ਖਾਤਾ ਤੁਹਾਡੇ ਸਾਰੇ ਡਿਵਾਈਸਾਂ ਉੱਤੇ ਕੰਮ ਕਰਦਾ ਹੈ',
               )}
             </p>
           </section>
