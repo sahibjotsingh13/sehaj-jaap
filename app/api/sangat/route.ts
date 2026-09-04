@@ -1,4 +1,4 @@
-import { getDb } from '@/db';
+import { getDb } from '#db';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,6 +19,63 @@ function json(data: unknown, status = 200) {
     status,
     headers: { 'Cache-Control': 'no-store' },
   });
+}
+
+async function proxySangat(request: Request) {
+  const upstreamOrigin = process.env.SANGAT_UPSTREAM_ORIGIN?.trim();
+  const upstreamToken = process.env.SANGAT_UPSTREAM_TOKEN?.trim();
+
+  if (!upstreamOrigin || !upstreamToken) {
+    return process.env.VERCEL
+      ? json(
+          {
+            error:
+              'Online Sangat is being connected. Personal Jaap counting still works on this device.',
+          },
+          503,
+        )
+      : null;
+  }
+
+  let target: URL;
+  try {
+    const incoming = new URL(request.url);
+    const origin = new URL(upstreamOrigin);
+    if (origin.protocol !== 'https:' || origin.origin === incoming.origin) {
+      throw new Error('Invalid Sangat upstream');
+    }
+    target = new URL('/api/sangat', origin);
+    target.search = incoming.search;
+  } catch {
+    return json({ error: 'Online Sangat is temporarily unavailable.' }, 503);
+  }
+
+  const headers = new Headers({
+    Accept: 'application/json',
+    'OAI-Sites-Authorization': `Bearer ${upstreamToken}`,
+  });
+  const contentType = request.headers.get('content-type');
+  if (contentType) headers.set('Content-Type', contentType);
+
+  try {
+    const response = await fetch(target, {
+      method: request.method,
+      headers,
+      body: request.method === 'POST' ? await request.text() : undefined,
+      cache: 'no-store',
+      redirect: 'manual',
+    });
+
+    return new Response(await response.text(), {
+      status: response.status,
+      headers: {
+        'Cache-Control': 'no-store',
+        'Content-Type': response.headers.get('content-type') || 'application/json',
+      },
+    });
+  } catch {
+    return json({ error: 'Online Sangat could not be reached. Please try again.' }, 503);
+  }
 }
 
 function cleanText(value: unknown, max: number) {
@@ -116,6 +173,9 @@ async function readGroup(code: string, practiceDate: string) {
 }
 
 export async function GET(request: Request) {
+  const proxied = await proxySangat(request);
+  if (proxied) return proxied;
+
   const url = new URL(request.url);
   const code = cleanCode(url.searchParams.get('code'));
   const practiceDate = url.searchParams.get('date');
@@ -129,6 +189,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const proxied = await proxySangat(request);
+  if (proxied) return proxied;
+
   let body: Record<string, unknown>;
   try {
     body = (await request.json()) as Record<string, unknown>;
