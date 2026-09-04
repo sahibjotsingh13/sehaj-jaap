@@ -115,6 +115,7 @@ type Summary = SavedSession & {
 type Membership = {
   code: string;
   memberId: string;
+  memberToken?: string;
   groupName: string;
   memberName: string;
   privacy: Privacy;
@@ -177,6 +178,9 @@ const DEFAULT_SETTINGS: Settings = {
 
 const STORAGE_KEY = 'sehaj-jaap-state-v1';
 const LAST_ACCOUNT_KEY = 'sehaj-jaap-last-account';
+const LOCAL_ACCOUNTS_KEY = 'sehaj-jaap-local-accounts-v1';
+const LOCAL_SESSION_KEY = 'sehaj-jaap-local-session-v1';
+const LOCAL_PASSWORD_ITERATIONS = 210_000;
 const DB_NAME = 'sehaj-jaap';
 
 async function readApiJson<T extends object>(response: Response): Promise<T> {
@@ -190,6 +194,158 @@ async function readApiJson<T extends object>(response: Response): Promise<T> {
     throw new Error('The service returned an invalid response. Please try again.');
   }
 }
+type LocalAccountRecord = Account & {
+  passwordHash: string;
+  passwordSalt: string;
+  passwordIterations: number;
+};
+
+function localBytesToHex(bytes: Uint8Array) {
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function localHexToBytes(value: string) {
+  const bytes = new Uint8Array(Math.floor(value.length / 2));
+  for (let index = 0; index < bytes.length; index += 1) {
+    bytes[index] = Number.parseInt(value.slice(index * 2, index * 2 + 2), 16);
+  }
+  return bytes;
+}
+
+async function localPasswordHash(
+  password: string,
+  saltHex: string,
+  iterations = LOCAL_PASSWORD_ITERATIONS,
+) {
+  const key = await crypto.subtle.importKey(
+    'raw',
+    new TextEncoder().encode(password),
+    'PBKDF2',
+    false,
+    ['deriveBits'],
+  );
+  const bits = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      hash: 'SHA-256',
+      salt: localHexToBytes(saltHex),
+      iterations,
+    },
+    key,
+    256,
+  );
+  return localBytesToHex(new Uint8Array(bits));
+}
+
+function readLocalAccounts(): LocalAccountRecord[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_ACCOUNTS_KEY);
+    const parsed = raw ? (JSON.parse(raw) as LocalAccountRecord[]) : [];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function writeLocalAccounts(accounts: LocalAccountRecord[]) {
+  localStorage.setItem(LOCAL_ACCOUNTS_KEY, JSON.stringify(accounts));
+}
+
+function normalizeLocalUsername(value: string) {
+  return value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 24);
+}
+
+async function registerLocalAccount(
+  usernameInput: string,
+  displayNameInput: string,
+  password: string,
+): Promise<Account> {
+  const username = normalizeLocalUsername(usernameInput);
+  const displayName = displayNameInput.trim().replace(/\s+/g, ' ').slice(0, 48);
+
+  if (!/^[a-z0-9_]{3,24}$/.test(username)) {
+    throw new Error('Username must be 3–24 letters, numbers, or underscores.');
+  }
+  if (displayName.length < 2) {
+    throw new Error('Please enter your name.');
+  }
+  if (password.length < 8 || password.length > 128) {
+    throw new Error('Password must be 8–128 characters.');
+  }
+
+  const accounts = readLocalAccounts();
+  if (accounts.some((item) => item.username === username)) {
+    throw new Error('That username is already registered on this device.');
+  }
+
+  const passwordSalt = localBytesToHex(
+    crypto.getRandomValues(new Uint8Array(16)),
+  );
+  const passwordHash = await localPasswordHash(password, passwordSalt);
+  const account: Account = {
+    id: crypto.randomUUID(),
+    username,
+    displayName,
+  };
+
+  writeLocalAccounts([
+    ...accounts,
+    {
+      ...account,
+      passwordHash,
+      passwordSalt,
+      passwordIterations: LOCAL_PASSWORD_ITERATIONS,
+    },
+  ]);
+  localStorage.setItem(LOCAL_SESSION_KEY, account.id);
+  return account;
+}
+
+async function loginLocalAccount(
+  usernameInput: string,
+  password: string,
+): Promise<Account> {
+  const username = normalizeLocalUsername(usernameInput);
+  const record = readLocalAccounts().find((item) => item.username === username);
+  if (!record) {
+    throw new Error('Username or password is incorrect.');
+  }
+
+  const digest = await localPasswordHash(
+    password,
+    record.passwordSalt,
+    record.passwordIterations,
+  );
+  if (digest !== record.passwordHash) {
+    throw new Error('Username or password is incorrect.');
+  }
+
+  const account: Account = {
+    id: record.id,
+    username: record.username,
+    displayName: record.displayName,
+  };
+  localStorage.setItem(LOCAL_SESSION_KEY, account.id);
+  return account;
+}
+
+function readLocalSessionAccount(): Account | null {
+  try {
+    const accountId = localStorage.getItem(LOCAL_SESSION_KEY);
+    if (!accountId) return null;
+    const record = readLocalAccounts().find((item) => item.id === accountId);
+    return record
+      ? {
+          id: record.id,
+          username: record.username,
+          displayName: record.displayName,
+        }
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 const STORE_NAME = 'state';
 let openDatabasePromise: Promise<IDBDatabase> | null = null;
 
@@ -625,6 +781,35 @@ export default function Home() {
   useEffect(() => {
     if (!hydrated) return;
     let active = true;
+
+    const restoreLocalAccount = async () => {
+      const localAccount = readLocalSessionAccount();
+      if (!active) return;
+
+      if (localAccount) {
+        if (stateOwnerId !== localAccount.id) {
+          const saved = await readAccountSnapshot(localAccount.id);
+          if (!active) return;
+          applyPersonalSnapshot(saved, localAccount.id, saved?.membership ?? null);
+        }
+        setAccount((current) =>
+          current?.id === localAccount.id &&
+          current.username === localAccount.username &&
+          current.displayName === localAccount.displayName
+            ? current
+            : localAccount,
+        );
+        localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify(localAccount));
+        return;
+      }
+
+      setAccount(null);
+      setMembership(null);
+      setGroupQueue([]);
+      setStateOwnerId(null);
+      localStorage.removeItem(LAST_ACCOUNT_KEY);
+    };
+
     void fetch('/api/sangat?account=1', { cache: 'no-store' })
       .then(async (response) => {
         const payload = await readApiJson<{
@@ -632,6 +817,7 @@ export default function Home() {
           membership?: Membership | null;
         }>(response);
         if (!active) return;
+
         if (response.ok && payload.account) {
           const verifiedAccount = payload.account;
           if (stateOwnerId !== verifiedAccount.id) {
@@ -654,26 +840,18 @@ export default function Home() {
           );
           localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify(verifiedAccount));
         } else {
-          setAccount(null);
-          setMembership(null);
-          setGroupQueue([]);
-          setStateOwnerId(null);
-          localStorage.removeItem(LAST_ACCOUNT_KEY);
+          await restoreLocalAccount();
         }
       })
-      .catch(async () => {
-        if (account && stateOwnerId !== account.id) {
-          const saved = await readAccountSnapshot(account.id);
-          if (active) applyPersonalSnapshot(saved, account.id, saved?.membership ?? null);
-        }
-      })
+      .catch(restoreLocalAccount)
       .finally(() => {
         if (active) setAccountChecked(true);
       });
+
     return () => {
       active = false;
     };
-  }, [account, hydrated, stateOwnerId]);
+  }, [hydrated, stateOwnerId]);
 
   useEffect(() => {
     const update = () => setOnline(navigator.onLine);
@@ -829,6 +1007,8 @@ export default function Home() {
         body: JSON.stringify({
           action: 'contribute',
           code: currentMembership.code,
+          memberId: currentMembership.memberId,
+          memberToken: currentMembership.memberToken,
           events: queue,
         }),
         keepalive: true,
@@ -1055,47 +1235,95 @@ export default function Home() {
     event.preventDefault();
     setAccountLoading(true);
     setAccountError('');
+
     try {
-      const response = await fetch('/api/sangat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: accountMode,
-          username: accountUsername,
-          password: accountPassword,
-          displayName: accountDisplayName,
-        }),
-      });
-      const payload = await readApiJson<{
-        account?: Account;
-        membership?: Membership | null;
-        error?: string;
-      }>(response);
-      if (!response.ok || !payload.account) {
-        throw new Error(payload.error || 'Could not open your account.');
+      let resolvedAccount: Account | null = null;
+      let resolvedMembership: Membership | null = null;
+      let localFallback = false;
+
+      try {
+        const response = await fetch('/api/sangat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: accountMode,
+            username: accountUsername,
+            password: accountPassword,
+            displayName: accountDisplayName,
+          }),
+        });
+        const payload = await readApiJson<{
+          account?: Account;
+          membership?: Membership | null;
+          error?: string;
+        }>(response);
+
+        if (response.ok && payload.account) {
+          resolvedAccount = payload.account;
+          resolvedMembership = payload.membership ?? null;
+          localStorage.removeItem(LOCAL_SESSION_KEY);
+        } else {
+          const legacyOrUnavailable =
+            payload.error === 'Unknown Sangat action.' ||
+            Boolean(payload.error?.includes('valid Sangat code and date')) ||
+            response.status === 503;
+
+          if (!legacyOrUnavailable) {
+            throw new Error(payload.error || 'Could not open your account.');
+          }
+          localFallback = true;
+        }
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          (error.message.includes('already taken') ||
+            error.message.includes('incorrect') ||
+            error.message.includes('Too many attempts') ||
+            error.message.includes('Password must') ||
+            error.message.includes('Username must'))
+        ) {
+          throw error;
+        }
+        localFallback = true;
       }
+
+      if (localFallback) {
+        resolvedAccount =
+          accountMode === 'register'
+            ? await registerLocalAccount(
+                accountUsername,
+                accountDisplayName,
+                accountPassword,
+              )
+            : await loginLocalAccount(accountUsername, accountPassword);
+        resolvedMembership = null;
+      }
+
+      if (!resolvedAccount) {
+        throw new Error('Could not open your account.');
+      }
+
       if (accountMode === 'login') {
-        const saved = await readAccountSnapshot(payload.account.id);
-        applyPersonalSnapshot(
-          saved,
-          payload.account.id,
-          payload.membership ?? null,
-        );
+        const saved = await readAccountSnapshot(resolvedAccount.id);
+        applyPersonalSnapshot(saved, resolvedAccount.id, resolvedMembership);
       } else if (claimLocalPractice) {
         setMembership(null);
         setGroupQueue([]);
-        setStateOwnerId(payload.account.id);
+        setStateOwnerId(resolvedAccount.id);
       } else {
-        applyPersonalSnapshot(null, payload.account.id, null);
+        applyPersonalSnapshot(null, resolvedAccount.id, null);
       }
-      setAccount(payload.account);
-      localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify(payload.account));
+
+      setAccount(resolvedAccount);
+      localStorage.setItem(LAST_ACCOUNT_KEY, JSON.stringify(resolvedAccount));
       setAccountPassword('');
       setOnboarded(true);
+
       if (inviteInput.length === 12) {
         setActiveView('sangat');
         setGroupMode('join');
       }
+
       setNotice(
         accountMode === 'register'
           ? tr('Your free account is ready', 'ਤੁਹਾਡਾ ਮੁਫ਼ਤ ਖਾਤਾ ਤਿਆਰ ਹੈ')
@@ -1120,6 +1348,7 @@ export default function Home() {
         body: JSON.stringify({ action: 'logout' }),
       });
     } finally {
+      localStorage.removeItem(LOCAL_SESSION_KEY);
       setAccount(null);
       setMembership(null);
       setGroupData(null);
@@ -1149,6 +1378,7 @@ export default function Home() {
           action,
           code: inviteInput,
           groupName,
+          memberName: account?.displayName || accountDisplayName || 'Member',
           dailyGoal: groupGoal,
           privacy,
         }),
@@ -1496,7 +1726,7 @@ export default function Home() {
                 </label>
               )}
               <label className="grid gap-2">
-                <span className="field-label">{tr('Unique username', 'ਵੱਖਰਾ ਯੂਜ਼ਰਨੇਮ')}</span>
+                <span className="field-label">{tr('Username', 'ਯੂਜ਼ਰਨੇਮ')}</span>
                 <input
                   autoCapitalize="none"
                   autoComplete="username"
@@ -1573,7 +1803,10 @@ export default function Home() {
             </form>
 
             <p className="mt-5 text-center text-xs font-medium text-muted-foreground">
-              {tr('Always free · No subscription', 'ਹਮੇਸ਼ਾ ਮੁਫ਼ਤ · ਕੋਈ ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਨਹੀਂ')}
+              {tr(
+                'Always free · No subscription · Account works on this device even if the account server is unavailable',
+                'ਹਮੇਸ਼ਾ ਮੁਫ਼ਤ · ਕੋਈ ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਨਹੀਂ · ਖਾਤਾ ਸਰਵਰ ਉਪਲਬਧ ਨਾ ਹੋਵੇ ਤਾਂ ਵੀ ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ ਖਾਤਾ ਕੰਮ ਕਰਦਾ ਹੈ',
+              )}
             </p>
           </section>
         </div>
