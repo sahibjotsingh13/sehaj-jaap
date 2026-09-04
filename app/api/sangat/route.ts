@@ -24,6 +24,105 @@ type Account = {
   displayName: string;
 };
 
+let authSchemaReady: Promise<void> | null = null;
+
+async function ensureAuthSchema() {
+  if (!authSchemaReady) {
+    authSchemaReady = (async () => {
+      const db = getDb();
+
+      await db.batch([
+        db.prepare(
+          `CREATE TABLE IF NOT EXISTS accounts (
+             id text PRIMARY KEY NOT NULL,
+             username text NOT NULL,
+             display_name text NOT NULL,
+             password_hash text NOT NULL,
+             password_salt text NOT NULL,
+             password_iterations integer DEFAULT 600000 NOT NULL,
+             failed_login_attempts integer DEFAULT 0 NOT NULL,
+             locked_until integer DEFAULT 0 NOT NULL,
+             created_at integer NOT NULL
+           )`,
+        ),
+        db.prepare(
+          'CREATE UNIQUE INDEX IF NOT EXISTS idx_accounts_username ON accounts (username)',
+        ),
+        db.prepare(
+          `CREATE TABLE IF NOT EXISTS auth_sessions (
+             id text PRIMARY KEY NOT NULL,
+             account_id text NOT NULL,
+             token_hash text NOT NULL,
+             expires_at integer NOT NULL,
+             created_at integer NOT NULL,
+             FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+           )`,
+        ),
+        db.prepare(
+          'CREATE UNIQUE INDEX IF NOT EXISTS idx_auth_sessions_token_hash ON auth_sessions (token_hash)',
+        ),
+        db.prepare(
+          'CREATE INDEX IF NOT EXISTS idx_auth_sessions_account_id ON auth_sessions (account_id)',
+        ),
+        db.prepare(
+          'CREATE INDEX IF NOT EXISTS idx_auth_sessions_expires_at ON auth_sessions (expires_at)',
+        ),
+      ]);
+
+      const accountColumns = await db
+        .prepare('PRAGMA table_info(accounts)')
+        .all<{ name: string }>();
+      const accountColumnNames = new Set(
+        accountColumns.results.map((column) => column.name),
+      );
+      const accountMigrations = [];
+      if (!accountColumnNames.has('failed_login_attempts')) {
+        accountMigrations.push(
+          db.prepare(
+            'ALTER TABLE accounts ADD failed_login_attempts integer DEFAULT 0 NOT NULL',
+          ),
+        );
+      }
+      if (!accountColumnNames.has('locked_until')) {
+        accountMigrations.push(
+          db.prepare(
+            'ALTER TABLE accounts ADD locked_until integer DEFAULT 0 NOT NULL',
+          ),
+        );
+      }
+      if (accountMigrations.length > 0) {
+        await db.batch(accountMigrations);
+      }
+
+      const memberColumns = await db
+        .prepare('PRAGMA table_info(sangat_members)')
+        .all<{ name: string }>();
+      if (memberColumns.results.length > 0) {
+        const memberColumnNames = new Set(
+          memberColumns.results.map((column) => column.name),
+        );
+        if (!memberColumnNames.has('account_id')) {
+          await db
+            .prepare(
+              'ALTER TABLE sangat_members ADD account_id text REFERENCES accounts(id)',
+            )
+            .run();
+        }
+        await db
+          .prepare(
+            'CREATE UNIQUE INDEX IF NOT EXISTS idx_sangat_members_group_account ON sangat_members (group_id, account_id)',
+          )
+          .run();
+      }
+    })().catch((error) => {
+      authSchemaReady = null;
+      throw error;
+    });
+  }
+
+  return authSchemaReady;
+}
+
 function json(data: unknown, status = 200, extraHeaders?: HeadersInit) {
   const headers = new Headers(extraHeaders);
   headers.set('Cache-Control', 'no-store');
@@ -212,6 +311,7 @@ function validPostOrigin(request: Request) {
 async function authenticatedAccount(request: Request): Promise<Account | null> {
   const token = cookieValue(request, SESSION_COOKIE);
   if (!token) return null;
+  await ensureAuthSchema();
   const tokenHash = await hashToken(token);
   const account = await getDb()
     .prepare(
@@ -392,6 +492,8 @@ export async function POST(request: Request) {
 
   const db = getDb();
   const action = body.action;
+
+  await ensureAuthSchema();
 
   if (action === 'register') {
     const username = cleanUsername(body.username);
