@@ -535,6 +535,7 @@ export default function Home() {
   const [account, setAccount] = useState<Account | null>(null);
   const [accountChecked, setAccountChecked] = useState(false);
   const [accountMode, setAccountMode] = useState<'login' | 'register'>('login');
+  const [showAccountForm, setShowAccountForm] = useState(false);
   const [accountUsername, setAccountUsername] = useState('');
   const [accountPassword, setAccountPassword] = useState('');
   const [accountDisplayName, setAccountDisplayName] = useState('');
@@ -1696,6 +1697,116 @@ export default function Home() {
     );
   }
 
+  if (!account && !showAccountForm) {
+    return (
+      <main className="public-account-landing min-h-dvh overflow-hidden bg-background text-foreground">
+        <section className="relative isolate min-h-dvh overflow-hidden">
+          <Image
+            alt="Sri Harmandir Sahib and the sarovar"
+            className="object-cover"
+            fill
+            priority
+            sizes="100vw"
+            src="/media/sangat/harmandir-sarovar.jpg"
+            style={{ objectPosition: 'center center' }}
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(9,30,33,.86)_0%,rgba(9,30,33,.58)_48%,rgba(9,30,33,.28)_100%)]" />
+          <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-[1180px] flex-col px-5 py-6 sm:px-8 lg:px-12">
+            <div className="flex items-center justify-between gap-4">
+              <SehajBrand inverse />
+              <div className="flex rounded-full border border-white/15 bg-black/10 p-1 text-xs text-white backdrop-blur-sm">
+                <button
+                  className={cn('rounded-full px-3 py-2', locale === 'en' && 'bg-white/14')}
+                  aria-label="Use English"
+                  aria-pressed={locale === 'en'}
+                  onClick={() => setSettings((value) => ({ ...value, locale: 'en' }))}
+                  type="button"
+                >
+                  EN
+                </button>
+                <button
+                  className={cn('rounded-full px-3 py-2', locale === 'pa' && 'bg-white/14')}
+                  aria-label="ਪੰਜਾਬੀ ਵਰਤੋ"
+                  aria-pressed={locale === 'pa'}
+                  onClick={() => setSettings((value) => ({ ...value, locale: 'pa' }))}
+                  type="button"
+                >
+                  ਪੰ
+                </button>
+              </div>
+            </div>
+
+            <div className="my-auto max-w-2xl py-20 text-white">
+              <p className="eyebrow text-white/65">
+                {tr('Sehaj Jaap', 'ਸਹਿਜ ਜਾਪ')}
+              </p>
+              <h1 className="mt-4 font-heading text-[clamp(3.2rem,8vw,6.6rem)] font-semibold leading-[.94] tracking-[-.055em] text-white">
+                {tr(
+                  'A peaceful place for Naam Simran.',
+                  'ਨਾਮ ਸਿਮਰਨ ਲਈ ਇੱਕ ਸ਼ਾਂਤ ਥਾਂ।',
+                )}
+              </h1>
+              <p className="mt-6 max-w-xl text-base leading-8 text-white/78 sm:text-lg">
+                {tr(
+                  'Create your own Sehaj Jaap account to keep your Jaap, sessions, progress and Sangat membership connected across your devices.',
+                  'ਆਪਣਾ ਸਹਿਜ ਜਾਪ ਖਾਤਾ ਬਣਾਓ ਤਾਂ ਜੋ ਤੁਹਾਡਾ ਜਾਪ, ਸੈਸ਼ਨ, ਤਰੱਕੀ ਅਤੇ ਸੰਗਤ ਮੈਂਬਰਸ਼ਿਪ ਤੁਹਾਡੇ ਡਿਵਾਈਸਾਂ ਨਾਲ ਜੁੜੀ ਰਹੇ।',
+                )}
+              </p>
+
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <button
+                  className="primary-action min-w-[180px]"
+                  onClick={() => {
+                    setAccountMode('login');
+                    setAccountError('');
+                    setShowAccountForm(true);
+                  }}
+                  type="button"
+                >
+                  <UserRoundCheck aria-hidden="true" />
+                  {tr('Sign in', 'ਸਾਈਨ ਇਨ')}
+                </button>
+                <button
+                  className="outline-action min-w-[180px] border-white/25 bg-white/8 text-white hover:bg-white/14"
+                  onClick={() => {
+                    setAccountMode('register');
+                    setAccountError('');
+                    setShowAccountForm(true);
+                  }}
+                  type="button"
+                >
+                  <UserPlus aria-hidden="true" />
+                  {tr('Create account', 'ਖਾਤਾ ਬਣਾਓ')}
+                </button>
+              </div>
+
+              <div className="mt-8 max-w-xl rounded-2xl border border-white/12 bg-black/14 p-4 text-sm leading-6 text-white/72 backdrop-blur-sm">
+                <div className="flex items-start gap-3">
+                  <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0" />
+                  <p>
+                    {tr(
+                      'Your account is only for Sehaj Jaap. We do not ask for card details, payments or phone numbers. Use a password that you do not reuse on other websites.',
+                      'ਤੁਹਾਡਾ ਖਾਤਾ ਸਿਰਫ਼ ਸਹਿਜ ਜਾਪ ਲਈ ਹੈ। ਅਸੀਂ ਕਾਰਡ ਵੇਰਵੇ, ਭੁਗਤਾਨ ਜਾਂ ਫ਼ੋਨ ਨੰਬਰ ਨਹੀਂ ਮੰਗਦੇ। ਉਹ ਪਾਸਵਰਡ ਵਰਤੋ ਜੋ ਤੁਸੀਂ ਹੋਰ ਵੈੱਬਸਾਈਟਾਂ ਉੱਤੇ ਦੁਬਾਰਾ ਨਹੀਂ ਵਰਤਦੇ।',
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-white/62">
+                <a className="underline-offset-4 hover:underline" href="/privacy">
+                  {tr('Privacy', 'ਪਰਦੇਦਾਰੀ')}
+                </a>
+                <a className="underline-offset-4 hover:underline" href="/security">
+                  {tr('Security', 'ਸੁਰੱਖਿਆ')}
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   if (!account) {
     return (
       <main className="auth-shell spatial-auth-shell min-h-dvh px-3 py-3 text-foreground sm:px-7 sm:py-7 lg:grid lg:place-items-center">
@@ -1730,6 +1841,17 @@ export default function Home() {
           </section>
 
           <section className="flex flex-col justify-center p-6 sm:p-10 lg:p-12">
+            <button
+              className="mb-6 inline-flex w-fit items-center gap-2 text-sm font-semibold text-muted-foreground transition hover:text-foreground"
+              onClick={() => {
+                setAccountError('');
+                setAccountPassword('');
+                setShowAccountForm(false);
+              }}
+              type="button"
+            >
+              ← {tr('Back to Sehaj Jaap', 'ਸਹਿਜ ਜਾਪ ਵੱਲ ਵਾਪਸ')}
+            </button>
             <div className="mb-8 flex items-center justify-between gap-4">
               <div>
                 <h2 className="font-heading text-3xl font-semibold tracking-[-.035em]">
@@ -1781,6 +1903,18 @@ export default function Home() {
               >
                 {tr('Create account', 'ਖਾਤਾ ਬਣਾਓ')}
               </button>
+            </div>
+
+            <div className="mb-5 rounded-2xl border border-[color:var(--line)] bg-secondary/55 p-4 text-sm leading-6 text-muted-foreground">
+              <div className="flex items-start gap-3">
+                <ShieldCheck aria-hidden="true" className="mt-0.5 size-5 shrink-0 text-primary" />
+                <p>
+                  {tr(
+                    'Sign in only to your Sehaj Jaap account. We never ask for banking, card or payment information. For safety, use a password unique to this site.',
+                    'ਸਿਰਫ਼ ਆਪਣੇ ਸਹਿਜ ਜਾਪ ਖਾਤੇ ਵਿੱਚ ਸਾਈਨ ਇਨ ਕਰੋ। ਅਸੀਂ ਕਦੇ ਵੀ ਬੈਂਕ, ਕਾਰਡ ਜਾਂ ਭੁਗਤਾਨ ਦੀ ਜਾਣਕਾਰੀ ਨਹੀਂ ਮੰਗਦੇ। ਸੁਰੱਖਿਆ ਲਈ ਇਸ ਸਾਈਟ ਲਈ ਵੱਖਰਾ ਪਾਸਵਰਡ ਵਰਤੋ।',
+                  )}
+                </p>
+              </div>
             </div>
 
             <form className="grid gap-5" onSubmit={submitAccount}>
