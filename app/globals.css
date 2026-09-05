@@ -4121,3 +4121,155 @@ html[data-scroll-state='scrolled'] .brand-logo-shell {
     transform: none !important;
   }
 }
+
+/* Supplied photography: readable surfaces and complete heritage portraits. */
+.spatial-shell::before {
+  background-image:
+    linear-gradient(180deg, rgba(251,248,239,.88), rgba(251,248,239,.73)),
+    url('/media/sangat/harmandir-sarovar.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  mask-image: none;
+}
+
+.dark .spatial-shell::before { opacity: .16; }
+
+.auth-visual-overlay {
+  background: linear-gradient(90deg, rgba(11,35,44,.83), rgba(11,35,44,.22)),
+    linear-gradient(0deg, rgba(11,35,44,.72), transparent 75%);
+}
+
+.story-rail .story-media-card { min-height: 180px; }
+.story-rail .story-card-media { opacity: .9; }
+.story-rail .goal-orbit-panel .story-card-media {
+  opacity: .4;
+  object-fit: contain;
+  object-position: right center !important;
+  transform: none;
+}
+.story-rail .story-card-scrim-dark,
+.story-rail .practice-link-card .story-card-scrim {
+  background: linear-gradient(100deg, rgba(6,28,34,.93), rgba(6,28,34,.58));
+}
+.story-rail .depth-action-primary { color: #fffaf0; }
+.story-rail .practice-link-card .story-card-media {
+  object-position: center 78% !important;
+}
+
+.home-film-link,
+.sangat-hero-scroll { background-color: #071923; }
+.home-film-link-image,
+.sangat-hero-image {
+  object-fit: contain;
+  object-position: right center !important;
+  transform: none !important;
+  translate: none !important;
+  filter: none;
+}
+.home-film-link-copy,
+.sangat-hero-copy { max-width: 58%; }
+.home-film-link-scrim,
+.sangat-hero-scrim {
+  background: linear-gradient(90deg, #071923 0%, rgba(7,25,35,.94) 33%, transparent 70%);
+}
+
+.supplied-heritage-hero {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  align-items: center;
+  min-height: 0;
+  background: #071923;
+}
+.supplied-heritage-hero-photo { grid-column: 2; grid-row: 1; }
+.supplied-heritage-hero .heritage-hero-copy {
+  position: relative;
+  inset: auto;
+  grid-column: 1;
+  grid-row: 1;
+  padding: clamp(1.5rem,4vw,4rem);
+}
+.supplied-heritage-hero .heritage-hero-copy h1 {
+  font-size: clamp(2.6rem,5vw,5rem);
+  line-height: 1.04;
+}
+.supplied-heritage .supplied-gallery-media {
+  width: fit-content;
+  max-width: 100%;
+  min-height: 0;
+  margin-inline: auto;
+  border-radius: 20px;
+  background: #071923;
+}
+.supplied-heritage .supplied-gallery-image {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 800px;
+  margin-inline: auto;
+  object-fit: contain;
+  transform: none !important;
+  filter: none !important;
+  animation: none !important;
+}
+.supplied-heritage .heritage-story-sequence {
+  gap: clamp(4rem,9vw,8rem);
+  padding-block: clamp(4rem,9vw,8rem);
+}
+.supplied-heritage .heritage-story-copy h2 {
+  font-size: clamp(2rem,4vw,4rem);
+  line-height: 1.08;
+}
+.supplied-heritage .heritage-story-copy > p:last-child { max-width: 38ch; }
+.supplied-heritage .supplied-archive-grid {
+  grid-auto-flow: row;
+  grid-template-columns: repeat(2,minmax(0,1fr));
+  gap: clamp(1rem,3vw,2.5rem);
+  overflow: visible;
+}
+.supplied-heritage .heritage-archive { padding-top: clamp(4rem,8vw,7rem); }
+
+@media (max-width: 900px) {
+  .supplied-heritage .supplied-story-frame,
+  .supplied-heritage .supplied-photo-break {
+    grid-template-columns: minmax(0,1fr);
+    gap: 1.5rem;
+  }
+  .supplied-heritage .heritage-story-frame-right .heritage-story-media,
+  .supplied-heritage .heritage-story-frame-right .heritage-story-copy {
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .supplied-heritage .supplied-gallery-image { max-height: 700px; }
+}
+
+@media (max-width: 700px) {
+  .supplied-heritage-hero { grid-template-columns: minmax(0,1fr); }
+  .supplied-heritage-hero-photo,
+  .supplied-heritage-hero .heritage-hero-copy {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .supplied-heritage-hero .heritage-hero-copy { padding: 1.75rem 1.5rem 2.25rem; }
+  .supplied-heritage .supplied-archive-grid { grid-template-columns: minmax(0,1fr); }
+  .home-film-link,
+  .sangat-hero-scroll { display: flex; flex-direction: column; min-height: 0; }
+  .home-film-link-image,
+  .sangat-hero-image {
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 600px;
+    object-fit: contain;
+  }
+  .home-film-link-copy,
+  .sangat-hero-copy {
+    position: relative;
+    inset: auto;
+    max-width: 100%;
+    padding: 1.75rem 1.5rem 2rem;
+  }
+  .home-film-link-scrim,
+  .sangat-hero-scrim { display: none; }
+}

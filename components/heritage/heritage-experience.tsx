@@ -12,33 +12,33 @@ function HeritageFrame({
   label,
   title,
   body,
+  width,
+  height,
   align = 'left',
-  position = 'center',
 }: {
   src: string;
   alt: string;
   label: string;
   title: string;
   body: string;
+  width: number;
+  height: number;
   align?: 'left' | 'right';
-  position?: string;
 }) {
   return (
     <article
-      className={`heritage-story-frame ${align === 'right' ? 'heritage-story-frame-right' : ''}`}
+      className={`heritage-story-frame supplied-story-frame ${align === 'right' ? 'heritage-story-frame-right' : ''}`}
       data-reveal
     >
-      <div className="heritage-story-media">
+      <div className="heritage-story-media supplied-gallery-media">
         <Image
           alt={alt}
-          className="heritage-story-image object-cover"
-          fill
-          quality={92}
-          sizes="(max-width: 900px) 100vw, 72vw"
+          className="supplied-gallery-image"
+          width={width}
+          height={height}
+          sizes="(max-width: 700px) 92vw, (max-width: 1100px) 65vw, 720px"
           src={src}
-          style={{ objectPosition: position }}
         />
-        <span className="heritage-story-vignette" aria-hidden="true" />
       </div>
       <div className="heritage-story-copy">
         <p className="eyebrow">{label}</p>
@@ -51,138 +51,107 @@ function HeritageFrame({
 
 export function HeritageExperience({ locale }: { locale: Locale }) {
   return (
-    <div className="heritage-experience view-stage">
-      <section className="heritage-hero heritage-photo-hero" data-reveal>
-        <Image
-          alt="Illuminated Sikh heritage architecture"
-          className="heritage-hero-image object-cover"
-          fill
-          priority
-          quality={94}
-          sizes="100vw"
-          src="/hazur-sahib.jpg"
-          style={{ objectPosition: 'center 44%' }}
-        />
-        <span className="heritage-hero-overlay" aria-hidden="true" />
+    <div className="heritage-experience supplied-heritage view-stage">
+      <section className="heritage-hero supplied-heritage-hero" data-reveal>
+        <div className="supplied-heritage-hero-photo">
+          <Image
+            alt="Golden dome and illuminated marble facade of Takht Sri Hazur Sahib at night"
+            className="supplied-gallery-image"
+            width={960}
+            height={1280}
+            priority
+            sizes="(max-width: 700px) 92vw, 650px"
+            src="/media/sangat/hazur-golden-dome.jpeg"
+          />
+        </div>
         <div className="heritage-hero-copy">
           <p className="eyebrow text-white/70">
-            {copy(locale, 'Living heritage', 'ਜੀਵੰਤ ਵਿਰਾਸਤ')}
+            {copy(locale, 'Sikh heritage', 'ਸਿੱਖ ਵਿਰਾਸਤ')}
           </p>
           <h1>
-            {copy(
-              locale,
-              'Sacred architecture, living light.',
-              'ਪਵਿੱਤਰ ਵਾਸਤੁਕਲਾ, ਜੀਵੰਤ ਰੌਸ਼ਨੀ।',
-            )}
+            {copy(locale, 'A journey of remembrance.', 'ਯਾਦਾਂ ਅਤੇ ਸ਼ਰਧਾ ਦੀ ਯਾਤਰਾ।')}
           </h1>
           <p>
-            {copy(
-              locale,
-              'A calm visual journey through Sikh heritage, built around high-resolution photography, generous space and deliberate motion.',
-              'ਉੱਚ-ਗੁਣਵੱਤਾ ਫੋਟੋਗ੍ਰਾਫੀ, ਖੁੱਲ੍ਹੀ ਥਾਂ ਅਤੇ ਸੋਚ-ਸਮਝ ਕੇ ਕੀਤੇ ਮੋਸ਼ਨ ਨਾਲ ਸਿੱਖ ਵਿਰਾਸਤ ਦੀ ਇੱਕ ਸ਼ਾਂਤ ਦ੍ਰਿਸ਼ ਯਾਤਰਾ।',
-            )}
+            {copy(locale, 'Sacred places, treasured art and the light of Sangat.', 'ਪਵਿੱਤਰ ਅਸਥਾਨ, ਅਨਮੋਲ ਕਲਾ ਅਤੇ ਸੰਗਤ ਦਾ ਚਾਨਣ।')}
           </p>
-        </div>
-        <div className="heritage-hero-index" aria-hidden="true">
-          <span>01</span>
-          <span className="heritage-hero-index-line" />
-          <span>05</span>
         </div>
       </section>
 
       <section className="heritage-story-sequence">
         <HeritageFrame
-          alt="Sri Harmandir Sahib"
-          body={copy(
-            locale,
-            'A wide architectural frame creates a sense of arrival. The image remains clear and unobstructed while typography stays secondary.',
-            'ਵਿਸ਼ਾਲ ਵਾਸਤੁਕ ਦ੍ਰਿਸ਼ ਆਗਮਨ ਦੀ ਭਾਵਨਾ ਪੈਦਾ ਕਰਦਾ ਹੈ। ਤਸਵੀਰ ਸਾਫ਼ ਅਤੇ ਬਿਨਾਂ ਰੁਕਾਵਟ ਰਹਿੰਦੀ ਹੈ, ਜਦਕਿ ਲਿਖਤ ਦੂਜੇ ਪੱਧਰ ਤੇ ਰਹਿੰਦੀ ਹੈ।',
-          )}
-          label={copy(locale, 'Sacred light', 'ਪਵਿੱਤਰ ਰੌਸ਼ਨੀ')}
-          position="center 48%"
-          src="/golden-temple.jpg"
-          title={copy(locale, 'A luminous presence', 'ਰੌਸ਼ਨ ਹਾਜ਼ਰੀ')}
+          alt="Golden domes above the facade of Gurdwara Sis Ganj Sahib in Delhi"
+          body={copy(locale, 'Golden domes rise above the red and cream facade in Delhi.', 'ਦਿੱਲੀ ਵਿਖੇ ਲਾਲ ਅਤੇ ਕਰੀਮ ਰੰਗ ਦੇ ਮੁੱਖ ਦਰਵਾਜ਼ੇ ਉੱਪਰ ਸੁਨਹਿਰੀ ਗੁੰਬਦ।')}
+          label={copy(locale, 'Delhi', 'ਦਿੱਲੀ')}
+          src="/media/sangat/sis-ganj-sahib.jpg"
+          width={2601}
+          height={1960}
+          title={copy(locale, 'Gurdwara Sis Ganj Sahib', 'ਗੁਰਦੁਆਰਾ ਸੀਸ ਗੰਜ ਸਾਹਿਬ')}
         />
         <HeritageFrame
           align="right"
-          alt="Takht Sri Hazur Sahib"
-          body={copy(
-            locale,
-            'The closer composition draws attention to geometry, material and illuminated detail without placing opaque panels over the photograph.',
-            'ਨੇੜਲੀ ਰਚਨਾ ਫੋਟੋ ਉੱਤੇ ਭਾਰੀ ਪੈਨਲ ਰੱਖੇ ਬਿਨਾਂ ਰੇਖਾਵਾਂ, ਸਮੱਗਰੀ ਅਤੇ ਰੌਸ਼ਨ ਵਿਸਥਾਰ ਵੱਲ ਧਿਆਨ ਲਿਆਉਂਦੀ ਹੈ।',
-          )}
-          label={copy(locale, 'Detail', 'ਵਿਸਥਾਰ')}
-          position="center 42%"
-          src="/hazur-sahib.jpg"
-          title={copy(locale, 'Craft in every surface', 'ਹਰ ਸਤ੍ਹਾ ਵਿੱਚ ਕਲਾ')}
+          alt="Sangat arriving beneath the illuminated dome of Takht Sri Hazur Sahib"
+          body={copy(locale, 'An evening view of Takht Sri Hazur Sahib, Nanded.', 'ਨੰਦੇੜ ਵਿਖੇ ਤਖ਼ਤ ਸ੍ਰੀ ਹਜ਼ੂਰ ਸਾਹਿਬ ਦਾ ਸ਼ਾਮ ਦਾ ਦ੍ਰਿਸ਼।')}
+          label={copy(locale, 'Nanded', 'ਨੰਦੇੜ')}
+          src="/media/sangat/hazur-night-darshan.jpeg"
+          width={960}
+          height={1280}
+          title={copy(locale, 'Takht Sri Hazur Sahib', 'ਤਖ਼ਤ ਸ੍ਰੀ ਹਜ਼ੂਰ ਸਾਹਿਬ')}
         />
         <HeritageFrame
-          alt="Sri Hemkund Sahib"
-          body={copy(
-            locale,
-            'The landscape becomes part of the story. Space, stillness and architecture are allowed to breathe as one composition.',
-            'ਦ੍ਰਿਸ਼ ਵੀ ਕਹਾਣੀ ਦਾ ਹਿੱਸਾ ਬਣਦਾ ਹੈ। ਥਾਂ, ਸ਼ਾਂਤੀ ਅਤੇ ਵਾਸਤੁਕਲਾ ਨੂੰ ਇੱਕ ਹੀ ਰਚਨਾ ਵਜੋਂ ਖੁੱਲ੍ਹ ਕੇ ਸਾਹ ਲੈਣ ਦਿੱਤਾ ਗਿਆ ਹੈ।',
-          )}
-          label={copy(locale, 'Stillness', 'ਸ਼ਾਂਤੀ')}
-          position="center 50%"
-          src="/hemkund-sahib.jpg"
-          title={copy(locale, 'Space for reflection', 'ਮਨਨ ਲਈ ਥਾਂ')}
+          alt="Traditional Sikh portrait with a gold turban, green robes and a manuscript"
+          body={copy(locale, 'A portrait in gold, green and warm earth tones.', 'ਸੁਨਹਿਰੀ, ਹਰੇ ਅਤੇ ਮਿੱਟੀ ਦੇ ਨਿੱਘੇ ਰੰਗਾਂ ਵਿੱਚ ਚਿੱਤਰ।')}
+          label={copy(locale, 'Sikh art', 'ਸਿੱਖ ਕਲਾ')}
+          src="/media/sangat/traditional-sikh-portrait.jpg"
+          width={500}
+          height={500}
+          title={copy(locale, 'A treasured portrait', 'ਇੱਕ ਅਨਮੋਲ ਚਿੱਤਰ')}
         />
       </section>
 
-      <section className="heritage-photo-break" data-reveal>
+      <section className="heritage-photo-break supplied-photo-break" data-reveal>
         <div className="heritage-photo-break-copy">
-          <p className="eyebrow">{copy(locale, 'Pause', 'ਠਹਿਰਾਅ')}</p>
-          <h2>
-            {copy(
-              locale,
-              'Let the image hold the moment.',
-              'ਪਲ ਨੂੰ ਤਸਵੀਰ ਵਿੱਚ ਠਹਿਰਣ ਦਿਓ।',
-            )}
-          </h2>
-          <p>
-            {copy(
-              locale,
-              'Low-resolution background videos have been removed. This section now uses a single high-quality photograph with subtle depth motion so the experience stays sharp and smooth.',
-              'ਘੱਟ-ਗੁਣਵੱਤਾ ਵਾਲੇ ਬੈਕਗ੍ਰਾਊਂਡ ਵੀਡੀਓ ਹਟਾ ਦਿੱਤੇ ਗਏ ਹਨ। ਹੁਣ ਇਹ ਹਿੱਸਾ ਹੌਲੀ ਡੈਪਥ ਮੋਸ਼ਨ ਨਾਲ ਇੱਕ ਉੱਚ-ਗੁਣਵੱਤਾ ਤਸਵੀਰ ਵਰਤਦਾ ਹੈ, ਤਾਂ ਜੋ ਅਨੁਭਵ ਸਾਫ਼ ਅਤੇ ਸੁਚੱਜਾ ਰਹੇ।',
-            )}
-          </p>
+          <p className="eyebrow">{copy(locale, 'Darbar', 'ਦਰਬਾਰ')}</p>
+          <h2>{copy(locale, 'Shastar and remembrance.', 'ਸ਼ਸਤਰ ਅਤੇ ਯਾਦ।')}</h2>
+          <p>{copy(locale, 'A glimpse of the darbar, its shastar and golden detail.', 'ਦਰਬਾਰ, ਸ਼ਸਤਰਾਂ ਅਤੇ ਸੁਨਹਿਰੀ ਕਾਰੀਗਰੀ ਦੀ ਇੱਕ ਝਲਕ।')}</p>
         </div>
-        <div className="heritage-photo-break-window">
+        <div className="heritage-photo-break-window supplied-gallery-media">
           <Image
-            alt="Takht Sri Kesgarh Sahib"
-            className="object-cover"
-            fill
-            quality={92}
-            sizes="(max-width: 900px) 100vw, 68vw"
-            src="/kesgarh-sahib.jpg"
-            style={{ objectPosition: 'center 48%' }}
+            alt="Shastar and a Sikh portrait within a gold-decorated darbar"
+            className="supplied-gallery-image"
+            width={720}
+            height={1278}
+            sizes="(max-width: 700px) 92vw, 560px"
+            src="/media/sangat/darbar-shastar.jpg"
           />
-          <span className="heritage-photo-break-overlay" aria-hidden="true" />
         </div>
       </section>
 
       <section className="heritage-archive" data-reveal>
         <div className="heritage-archive-heading">
-          <p className="eyebrow">{copy(locale, 'Archive', 'ਅਰਕਾਈਵ')}</p>
-          <h2>{copy(locale, 'Places, memory, continuity.', 'ਥਾਵਾਂ, ਯਾਦ, ਨਿਰੰਤਰਤਾ।')}</h2>
+          <p className="eyebrow">{copy(locale, 'Hazur Sahib', 'ਹਜ਼ੂਰ ਸਾਹਿਬ')}</p>
+          <h2>{copy(locale, 'Marble, light and devotion.', 'ਸੰਗਮਰਮਰ, ਚਾਨਣ ਅਤੇ ਸ਼ਰਧਾ।')}</h2>
         </div>
-        <div className="heritage-archive-track">
+        <div className="heritage-archive-track supplied-archive-grid">
           {[
-            ['/golden-temple.jpg', 'Sri Harmandir Sahib'],
-            ['/hazur-sahib.jpg', 'Takht Sri Hazur Sahib'],
-            ['/hemkund-sahib.jpg', 'Sri Hemkund Sahib'],
-            ['/kesgarh-sahib.jpg', 'Takht Sri Kesgarh Sahib'],
-            ['/bangla-sahib.jpg', 'Gurdwara Bangla Sahib'],
-          ].map(([src, title], index) => (
+            {
+              src: '/media/sangat/hazur-marble-detail.jpeg',
+              title: copy(locale, 'Illuminated marble', 'ਰੌਸ਼ਨ ਸੰਗਮਰਮਰ'),
+              alt: 'A close view of the marble arches and illuminated Ik Onkar at Hazur Sahib',
+            },
+            {
+              src: '/media/sangat/hazur-illuminated-arches.jpeg',
+              title: copy(locale, 'An evening in Nanded', 'ਨੰਦੇੜ ਦੀ ਇੱਕ ਸ਼ਾਮ'),
+              alt: 'Marble facade of Hazur Sahib lit against the night sky',
+            },
+          ].map(({ src, title, alt }, index) => (
             <figure className="heritage-archive-item" key={src}>
-              <div className="heritage-archive-image">
+              <div className="heritage-archive-image supplied-gallery-media">
                 <Image
-                  alt={title}
-                  className="object-cover"
-                  fill
-                  quality={90}
-                  sizes="(max-width: 700px) 78vw, 34vw"
+                  alt={alt}
+                  className="supplied-gallery-image"
+                  width={960}
+                  height={1280}
+                  sizes="(max-width: 700px) 92vw, 46vw"
                   src={src}
                 />
               </div>

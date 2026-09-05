@@ -1632,12 +1632,14 @@ export default function Home() {
         <div aria-hidden="true" className="ambient-depth ambient-depth-b" />
         <div className="auth-card auth-3d-stage mx-auto grid w-full max-w-[1200px] overflow-hidden rounded-[38px] lg:min-h-[720px] lg:grid-cols-[1.08fr_.92fr]">
           <section className="auth-visual auth-visual-depth relative isolate min-h-[270px] overflow-hidden bg-primary text-white sm:min-h-[360px] lg:min-h-full">
-            <img
-              alt="Takht Sri Hazur Sahib courtyard"
-              className="absolute inset-0 size-full object-cover"
-              decoding="async"
-              src="https://upload.wikimedia.org/wikipedia/commons/5/59/Gurudwara_shri_sachkhand_hazur_sahib_-_panoramio_%282%29.jpg"
-              style={{ objectPosition: 'center 46%' }}
+            <Image
+              alt="Gurdwara Dukh Nivaran Sahib reflected in the sarovar at dusk"
+              className="object-cover"
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 650px"
+              src="/media/sangat/dukh-nivaran-sahib.jpg"
+              style={{ objectPosition: '64% center' }}
             />
             <div className="auth-visual-overlay absolute inset-0" />
             <div className="relative z-10 flex min-h-[inherit] flex-col p-6 sm:p-9 lg:min-h-full lg:p-12">
@@ -2152,7 +2154,7 @@ export default function Home() {
                   priority
                   quality={94}
                   sizes="(max-width: 1180px) 100vw, 1180px"
-                  src="/golden-temple.jpg"
+                  src="/media/sangat/hazur-sahib-courtyard.jpg"
                   style={{ objectPosition: 'center 50%' }}
                 />
                 <span className="counter-cinematic-wash" />
@@ -2281,7 +2283,7 @@ export default function Home() {
                   fill
                   quality={90}
                   sizes="(max-width: 1024px) 100vw, 33vw"
-                  src="/hazur-sahib.jpg"
+                  src="/media/sangat/hazur-night-dome.jpeg"
                   style={{ objectPosition: 'center 44%' }}
                 />
                 <span aria-hidden="true" className="story-card-scrim" />
@@ -2316,7 +2318,7 @@ export default function Home() {
                   fill
                   quality={90}
                   sizes="(max-width: 1024px) 100vw, 33vw"
-                  src="/bangla-sahib.jpg"
+                  src="/hemkund-sahib.jpg"
                   style={{ objectPosition: 'center 48%' }}
                 />
                 <span aria-hidden="true" className="story-card-scrim story-card-scrim-dark" />
@@ -2342,7 +2344,7 @@ export default function Home() {
                   fill
                   quality={90}
                   sizes="(max-width: 1024px) 100vw, 33vw"
-                  src="/golden-temple.jpg"
+                  src="/media/sangat/hazur-night-sangat.jpeg"
                   style={{ objectPosition: 'center 50%' }}
                 />
                 <span aria-hidden="true" className="story-card-scrim" />
@@ -2405,8 +2407,8 @@ export default function Home() {
                   fill
                   quality={94}
                   sizes="(max-width: 1180px) 100vw, 1180px"
-                  src="/bangla-sahib.jpg"
-                  style={{ objectPosition: 'center 48%' }}
+                  src="/media/sangat/hazur-golden-evening.jpeg"
+                  style={{ objectPosition: 'center 60%' }}
                 />
                 <span className="home-film-link-scrim" aria-hidden="true" />
                 <span className="home-film-link-copy">
@@ -2441,7 +2443,7 @@ export default function Home() {
                   priority
                   quality={94}
                   sizes="(max-width: 1120px) 100vw, 1120px"
-                  src="/hazur-sahib.jpg"
+                  src="/media/sangat/gurbani-pages.jpg"
                   style={{ objectPosition: 'center 43%' }}
                 />
                 <span className="focus-setup-hero-wash" />
@@ -2647,8 +2649,8 @@ export default function Home() {
                 priority
                 quality={94}
                 sizes="(max-width: 1180px) 100vw, 1180px"
-                src="/bangla-sahib.jpg"
-                style={{ objectPosition: 'center 50%' }}
+                src="/media/sangat/hazur-evening-arrival.jpeg"
+                style={{ objectPosition: 'center 60%' }}
               />
               <span className="sangat-hero-scrim" aria-hidden="true" />
               <div className="sangat-hero-copy">
@@ -3343,7 +3345,7 @@ export default function Home() {
                   fill
                   quality={92}
                   sizes="(max-width: 980px) 100vw, 980px"
-                  src="/golden-temple.jpg"
+                  src="/bangla-sahib.jpg"
                   style={{ objectPosition: 'center 50%' }}
                 />
                 <span />
