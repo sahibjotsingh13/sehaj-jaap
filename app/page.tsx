@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode, SyntheticEvent } from 'react';
+import type { ComponentPropsWithoutRef, ReactNode, SyntheticEvent } from 'react';
 import {
   useCallback,
   useEffect,
@@ -463,12 +463,13 @@ function softCue() {
 function Panel({
   children,
   className,
-}: {
+  ...props
+}: ComponentPropsWithoutRef<'section'> & {
   children: ReactNode;
-  className?: string;
 }) {
   return (
     <section
+      {...props}
       className={cn(
         'panel-surface spatial-section',
         className,
