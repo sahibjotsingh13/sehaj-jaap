@@ -3875,3 +3875,182 @@ a,
     transform: none !important;
   }
 }
+
+
+/* Performance-focused motion refinement */
+
+.spatial-header::after {
+  content: '';
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 0;
+  height: 1px;
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      90deg,
+      var(--saffron) 0 calc(var(--scroll-progress) * 100%),
+      rgba(117,89,37,.08) calc(var(--scroll-progress) * 100%) 100%
+    );
+  opacity: .72;
+  pointer-events: none;
+}
+
+/* Large translucent panels are intentionally not blurred; blur is kept only on navigation. */
+.spatial-panel,
+.counter-3d-stage,
+.focus-setup-panel,
+.summary-cinematic,
+.depth-action,
+.goal-orbit-panel,
+.story-media-card {
+  backdrop-filter: none !important;
+}
+
+.spatial-header,
+.spatial-dock {
+  backdrop-filter: blur(18px) saturate(122%) !important;
+}
+
+.auth-3d-stage {
+  backdrop-filter: blur(16px) saturate(115%);
+}
+
+/* Avoid expensive filter animations while preserving the same premium entrance feel. */
+.motion-enhanced [data-reveal] {
+  will-change: opacity, transform;
+}
+
+@supports not (animation-timeline: view()) {
+  .motion-enhanced [data-reveal] {
+    filter: none !important;
+    transform: translate3d(0, 34px, 0) scale(.99);
+    transition:
+      opacity 720ms var(--ease-premium),
+      transform 820ms var(--ease-premium);
+  }
+
+  .motion-enhanced [data-reveal].is-revealed {
+    transform: translate3d(0,0,0) scale(1);
+  }
+}
+
+@keyframes scroll-depth-in {
+  from {
+    opacity: .18;
+    transform: translate3d(0, 54px, 0) scale(.975);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0,0,0) scale(1);
+  }
+}
+
+::view-transition-old(root) {
+  animation: page-view-out-fast 250ms cubic-bezier(.4,0,.7,.2) both;
+}
+
+::view-transition-new(root) {
+  animation: page-view-in-fast 500ms var(--ease-premium) both;
+}
+
+@keyframes page-view-out-fast {
+  to {
+    opacity: 0;
+    transform: translate3d(0,-8px,0) scale(.998);
+  }
+}
+
+@keyframes page-view-in-fast {
+  from {
+    opacity: 0;
+    transform: translate3d(0,18px,0) scale(.993);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0,0,0) scale(1);
+  }
+}
+
+/* Subtle 3D response follows the pointer without introducing constant motion. */
+@media (hover:hover) and (pointer:fine) {
+  .count-orb-3d:hover {
+    transform:
+      perspective(1200px)
+      translateY(-5px)
+      rotateX(calc(var(--pointer-y) * -1.2deg))
+      rotateY(calc(var(--pointer-x) * 1.6deg))
+      scale(1.008);
+  }
+
+  .home-film-link:hover,
+  .heritage-story-media:hover,
+  .heritage-photo-break-window:hover,
+  .sangat-hero-scroll:hover,
+  .focus-setup-hero:hover {
+    transform:
+      perspective(1400px)
+      translateY(-4px)
+      rotateX(calc(var(--pointer-y) * -.55deg))
+      rotateY(calc(var(--pointer-x) * .75deg));
+  }
+}
+
+/* Faster off-screen rendering and less paint work on long pages. */
+.home-scroll-journey,
+.heritage-story-frame,
+.heritage-photo-break,
+.heritage-archive,
+.progress-week-timeline,
+.metric-ribbon,
+.profile-settings-flow {
+  content-visibility: auto;
+  contain-intrinsic-size: 720px;
+}
+
+.heritage-story-media,
+.heritage-photo-break-window,
+.home-film-link,
+.sangat-hero-scroll,
+.focus-setup-hero,
+.counter-cinematic-media {
+  contain: paint;
+}
+
+.heritage-story-image,
+.heritage-photo-break-window img,
+.home-film-link-image,
+.sangat-hero-image,
+.focus-setup-hero-media img,
+.counter-cinematic-photo {
+  will-change: transform;
+}
+
+/* Keep hover changes slow enough to feel physical rather than synthetic. */
+.story-card-media,
+.heritage-story-image,
+.home-film-link-image,
+.sangat-hero-image,
+.focus-setup-hero-media img,
+.heritage-photo-break-window img {
+  transition-duration: 900ms;
+  transition-timing-function: var(--ease-premium);
+}
+
+@media (max-width: 768px) {
+  .spatial-header,
+  .spatial-dock {
+    backdrop-filter: blur(12px) saturate(112%) !important;
+  }
+
+  .home-scroll-journey,
+  .heritage-story-frame,
+  .heritage-photo-break,
+  .heritage-archive,
+  .progress-week-timeline,
+  .metric-ribbon,
+  .profile-settings-flow {
+    contain-intrinsic-size: 560px;
+  }
+}
