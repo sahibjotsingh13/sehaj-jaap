@@ -14,17 +14,33 @@ export function SmoothEffects() {
     root.classList.add('motion-enhanced');
 
     let frame = 0;
+    let lastScrollY = window.scrollY;
+    let lastTime = performance.now();
+
     const updateScroll = () => {
       if (frame) return;
       frame = window.requestAnimationFrame(() => {
         frame = 0;
+        const now = performance.now();
+        const currentY = window.scrollY;
         const max = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-        const progress = Math.min(1, Math.max(0, window.scrollY / max));
+        const progress = Math.min(1, Math.max(0, currentY / max));
+        const elapsed = Math.max(16, now - lastTime);
+        const velocity = Math.max(
+          -1,
+          Math.min(1, ((currentY - lastScrollY) / elapsed) * 0.12),
+        );
+
         root.style.setProperty('--scroll-progress', progress.toFixed(4));
+        root.style.setProperty('--scroll-velocity', velocity.toFixed(4));
         root.style.setProperty(
           '--hero-parallax',
-          Math.min(34, window.scrollY * 0.035).toFixed(2) + 'px',
+          Math.min(32, currentY * 0.03).toFixed(2) + 'px',
         );
+        root.dataset.scrollState = currentY > 28 ? 'scrolled' : 'top';
+
+        lastScrollY = currentY;
+        lastTime = now;
       });
     };
 
@@ -97,6 +113,8 @@ export function SmoothEffects() {
       root.style.removeProperty('--hero-parallax');
       root.style.removeProperty('--pointer-x');
       root.style.removeProperty('--pointer-y');
+      root.style.removeProperty('--scroll-velocity');
+      delete root.dataset.scrollState;
     };
   }, []);
 
