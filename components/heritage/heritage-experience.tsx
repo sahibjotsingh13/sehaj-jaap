@@ -13,6 +13,7 @@ function HeritageFrame({
   title,
   body,
   align = 'left',
+  position = 'center',
 }: {
   src: string;
   alt: string;
@@ -20,16 +21,22 @@ function HeritageFrame({
   title: string;
   body: string;
   align?: 'left' | 'right';
+  position?: string;
 }) {
   return (
-    <article className={`heritage-story-frame ${align === 'right' ? 'heritage-story-frame-right' : ''}`}>
+    <article
+      className={`heritage-story-frame ${align === 'right' ? 'heritage-story-frame-right' : ''}`}
+      data-reveal
+    >
       <div className="heritage-story-media">
         <Image
           alt={alt}
           className="heritage-story-image object-cover"
           fill
+          quality={92}
           sizes="(max-width: 900px) 100vw, 72vw"
           src={src}
+          style={{ objectPosition: position }}
         />
         <span className="heritage-story-vignette" aria-hidden="true" />
       </div>
@@ -45,21 +52,20 @@ function HeritageFrame({
 export function HeritageExperience({ locale }: { locale: Locale }) {
   return (
     <div className="heritage-experience view-stage">
-      <section className="heritage-hero">
-        <video
-          autoPlay
-          className="heritage-hero-video"
-          loop
-          muted
-          playsInline
-          poster="/heritage-user-03.webp"
-          preload="metadata"
-        >
-          <source src="/heritage-motion-01.webm" type="video/webm" />
-        </video>
+      <section className="heritage-hero heritage-photo-hero" data-reveal>
+        <Image
+          alt="Illuminated Sikh heritage architecture"
+          className="heritage-hero-image object-cover"
+          fill
+          priority
+          quality={94}
+          sizes="100vw"
+          src="/hazur-sahib.jpg"
+          style={{ objectPosition: 'center 44%' }}
+        />
         <span className="heritage-hero-overlay" aria-hidden="true" />
         <div className="heritage-hero-copy">
-          <p className="eyebrow text-white/65">
+          <p className="eyebrow text-white/70">
             {copy(locale, 'Living heritage', 'ਜੀਵੰਤ ਵਿਰਾਸਤ')}
           </p>
           <h1>
@@ -72,89 +78,91 @@ export function HeritageExperience({ locale }: { locale: Locale }) {
           <p>
             {copy(
               locale,
-              'A slower visual journey through the photographs and films you shared — presented as atmosphere, memory and place rather than a wall of cards.',
-              'ਤੁਹਾਡੇ ਸਾਂਝੇ ਕੀਤੇ ਫੋਟੋਆਂ ਅਤੇ ਫ਼ਿਲਮਾਂ ਰਾਹੀਂ ਇੱਕ ਹੌਲੀ ਦ੍ਰਿਸ਼ ਯਾਤਰਾ — ਕਾਰਡਾਂ ਦੀ ਭੀੜ ਨਹੀਂ, ਸਗੋਂ ਮਾਹੌਲ, ਯਾਦ ਅਤੇ ਥਾਂ ਵਜੋਂ।',
+              'A calm visual journey through Sikh heritage, built around high-resolution photography, generous space and deliberate motion.',
+              'ਉੱਚ-ਗੁਣਵੱਤਾ ਫੋਟੋਗ੍ਰਾਫੀ, ਖੁੱਲ੍ਹੀ ਥਾਂ ਅਤੇ ਸੋਚ-ਸਮਝ ਕੇ ਕੀਤੇ ਮੋਸ਼ਨ ਨਾਲ ਸਿੱਖ ਵਿਰਾਸਤ ਦੀ ਇੱਕ ਸ਼ਾਂਤ ਦ੍ਰਿਸ਼ ਯਾਤਰਾ।',
             )}
           </p>
         </div>
         <div className="heritage-hero-index" aria-hidden="true">
           <span>01</span>
           <span className="heritage-hero-index-line" />
-          <span>04</span>
+          <span>05</span>
         </div>
       </section>
 
       <section className="heritage-story-sequence">
         <HeritageFrame
-          alt="Illuminated gurdwara facade at night"
+          alt="Sri Harmandir Sahib"
           body={copy(
             locale,
-            'Night isolates the architecture from distraction. Light becomes the visual guide, while the original photographic character remains intact.',
-            'ਰਾਤ ਇਮਾਰਤ ਨੂੰ ਭਟਕਾਵੇ ਤੋਂ ਵੱਖ ਕਰਦੀ ਹੈ। ਰੌਸ਼ਨੀ ਦ੍ਰਿਸ਼ ਮਾਰਗਦਰਸ਼ਕ ਬਣਦੀ ਹੈ ਅਤੇ ਮੂਲ ਫੋਟੋਗ੍ਰਾਫ਼ਿਕ ਸੁਭਾਵ ਕਾਇਮ ਰਹਿੰਦਾ ਹੈ।',
+            'A wide architectural frame creates a sense of arrival. The image remains clear and unobstructed while typography stays secondary.',
+            'ਵਿਸ਼ਾਲ ਵਾਸਤੁਕ ਦ੍ਰਿਸ਼ ਆਗਮਨ ਦੀ ਭਾਵਨਾ ਪੈਦਾ ਕਰਦਾ ਹੈ। ਤਸਵੀਰ ਸਾਫ਼ ਅਤੇ ਬਿਨਾਂ ਰੁਕਾਵਟ ਰਹਿੰਦੀ ਹੈ, ਜਦਕਿ ਲਿਖਤ ਦੂਜੇ ਪੱਧਰ ਤੇ ਰਹਿੰਦੀ ਹੈ।',
           )}
-          label={copy(locale, 'Night light', 'ਰਾਤ ਦੀ ਰੌਸ਼ਨੀ')}
-          src="/heritage-user-01.webp"
+          label={copy(locale, 'Sacred light', 'ਪਵਿੱਤਰ ਰੌਸ਼ਨੀ')}
+          position="center 48%"
+          src="/golden-temple.jpg"
           title={copy(locale, 'A luminous presence', 'ਰੌਸ਼ਨ ਹਾਜ਼ਰੀ')}
         />
         <HeritageFrame
           align="right"
-          alt="Close view of illuminated dome and marble architecture"
+          alt="Takht Sri Hazur Sahib"
           body={copy(
             locale,
-            'The closer frame rewards attention: marble relief, domes, lights and the Ik Onkar form become a layered composition rather than decoration.',
-            'ਨੇੜਲਾ ਦ੍ਰਿਸ਼ ਧਿਆਨ ਦਾ ਇਨਾਮ ਦਿੰਦਾ ਹੈ: ਸੰਗਮਰਮਰ, ਗੁੰਬਦ, ਰੌਸ਼ਨੀ ਅਤੇ ਇਕ ਓਅੰਕਾਰ ਦੀ ਰੂਪ-ਰਚਨਾ ਸਿਰਫ਼ ਸਜਾਵਟ ਨਹੀਂ ਰਹਿੰਦੀ।',
+            'The closer composition draws attention to geometry, material and illuminated detail without placing opaque panels over the photograph.',
+            'ਨੇੜਲੀ ਰਚਨਾ ਫੋਟੋ ਉੱਤੇ ਭਾਰੀ ਪੈਨਲ ਰੱਖੇ ਬਿਨਾਂ ਰੇਖਾਵਾਂ, ਸਮੱਗਰੀ ਅਤੇ ਰੌਸ਼ਨ ਵਿਸਥਾਰ ਵੱਲ ਧਿਆਨ ਲਿਆਉਂਦੀ ਹੈ।',
           )}
           label={copy(locale, 'Detail', 'ਵਿਸਥਾਰ')}
-          src="/heritage-user-02.webp"
+          position="center 42%"
+          src="/hazur-sahib.jpg"
           title={copy(locale, 'Craft in every surface', 'ਹਰ ਸਤ੍ਹਾ ਵਿੱਚ ਕਲਾ')}
         />
         <HeritageFrame
-          alt="Gurdwara courtyard with Sangat and Nishan Sahib"
+          alt="Sri Hemkund Sahib"
           body={copy(
             locale,
-            'The wider courtyard brings people back into the frame. Heritage is not only architecture; it is movement, arrival, Sangat and shared presence.',
-            'ਵਿਸ਼ਾਲ ਪਰਿਸਰ ਲੋਕਾਂ ਨੂੰ ਮੁੜ ਦ੍ਰਿਸ਼ ਵਿੱਚ ਲਿਆਉਂਦਾ ਹੈ। ਵਿਰਾਸਤ ਸਿਰਫ਼ ਇਮਾਰਤ ਨਹੀਂ; ਇਹ ਚਲਹਲ-ਪਹਿਲ, ਆਗਮਨ, ਸੰਗਤ ਅਤੇ ਸਾਂਝੀ ਹਾਜ਼ਰੀ ਹੈ।',
+            'The landscape becomes part of the story. Space, stillness and architecture are allowed to breathe as one composition.',
+            'ਦ੍ਰਿਸ਼ ਵੀ ਕਹਾਣੀ ਦਾ ਹਿੱਸਾ ਬਣਦਾ ਹੈ। ਥਾਂ, ਸ਼ਾਂਤੀ ਅਤੇ ਵਾਸਤੁਕਲਾ ਨੂੰ ਇੱਕ ਹੀ ਰਚਨਾ ਵਜੋਂ ਖੁੱਲ੍ਹ ਕੇ ਸਾਹ ਲੈਣ ਦਿੱਤਾ ਗਿਆ ਹੈ।',
           )}
-          label={copy(locale, 'Sangat', 'ਸੰਗਤ')}
-          src="/heritage-user-03.webp"
-          title={copy(locale, 'A place that is lived', 'ਇੱਕ ਜੀਵੰਤ ਥਾਂ')}
+          label={copy(locale, 'Stillness', 'ਸ਼ਾਂਤੀ')}
+          position="center 50%"
+          src="/hemkund-sahib.jpg"
+          title={copy(locale, 'Space for reflection', 'ਮਨਨ ਲਈ ਥਾਂ')}
         />
       </section>
 
-      <section className="heritage-film-break">
-        <div className="heritage-film-copy">
-          <p className="eyebrow">{copy(locale, 'In motion', 'ਚਲਦੀ ਵਿਰਾਸਤ')}</p>
+      <section className="heritage-photo-break" data-reveal>
+        <div className="heritage-photo-break-copy">
+          <p className="eyebrow">{copy(locale, 'Pause', 'ਠਹਿਰਾਅ')}</p>
           <h2>
             {copy(
               locale,
-              'Let the scene breathe.',
-              'ਦ੍ਰਿਸ਼ ਨੂੰ ਸਾਹ ਲੈਣ ਦਿਓ।',
+              'Let the image hold the moment.',
+              'ਪਲ ਨੂੰ ਤਸਵੀਰ ਵਿੱਚ ਠਹਿਰਣ ਦਿਓ।',
             )}
           </h2>
           <p>
             {copy(
               locale,
-              'The second film is intentionally quiet and full-width. It creates a pause between stories and makes the scroll feel cinematic instead of interface-heavy.',
-              'ਦੂਜੀ ਫ਼ਿਲਮ ਜਾਣਬੁੱਝ ਕੇ ਸ਼ਾਂਤ ਅਤੇ ਪੂਰੀ ਚੌੜਾਈ ਵਿੱਚ ਹੈ। ਇਹ ਕਹਾਣੀਆਂ ਵਿਚਕਾਰ ਠਹਿਰਾਅ ਬਣਾਉਂਦੀ ਹੈ ਅਤੇ ਸਕ੍ਰੋਲ ਨੂੰ ਇੰਟਰਫੇਸ-ਭਾਰੀ ਨਹੀਂ, ਸਿਨੇਮੈਟਿਕ ਮਹਿਸੂਸ ਕਰਦੀ ਹੈ।',
+              'Low-resolution background videos have been removed. This section now uses a single high-quality photograph with subtle depth motion so the experience stays sharp and smooth.',
+              'ਘੱਟ-ਗੁਣਵੱਤਾ ਵਾਲੇ ਬੈਕਗ੍ਰਾਊਂਡ ਵੀਡੀਓ ਹਟਾ ਦਿੱਤੇ ਗਏ ਹਨ। ਹੁਣ ਇਹ ਹਿੱਸਾ ਹੌਲੀ ਡੈਪਥ ਮੋਸ਼ਨ ਨਾਲ ਇੱਕ ਉੱਚ-ਗੁਣਵੱਤਾ ਤਸਵੀਰ ਵਰਤਦਾ ਹੈ, ਤਾਂ ਜੋ ਅਨੁਭਵ ਸਾਫ਼ ਅਤੇ ਸੁਚੱਜਾ ਰਹੇ।',
             )}
           </p>
         </div>
-        <div className="heritage-film-window">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            poster="/heritage-user-02.webp"
-            preload="metadata"
-          >
-            <source src="/heritage-motion-02.webm" type="video/webm" />
-          </video>
-          <span className="heritage-film-window-overlay" aria-hidden="true" />
+        <div className="heritage-photo-break-window">
+          <Image
+            alt="Takht Sri Kesgarh Sahib"
+            className="object-cover"
+            fill
+            quality={92}
+            sizes="(max-width: 900px) 100vw, 68vw"
+            src="/kesgarh-sahib.jpg"
+            style={{ objectPosition: 'center 48%' }}
+          />
+          <span className="heritage-photo-break-overlay" aria-hidden="true" />
         </div>
       </section>
 
-      <section className="heritage-archive">
+      <section className="heritage-archive" data-reveal>
         <div className="heritage-archive-heading">
           <p className="eyebrow">{copy(locale, 'Archive', 'ਅਰਕਾਈਵ')}</p>
           <h2>{copy(locale, 'Places, memory, continuity.', 'ਥਾਵਾਂ, ਯਾਦ, ਨਿਰੰਤਰਤਾ।')}</h2>
@@ -173,6 +181,7 @@ export function HeritageExperience({ locale }: { locale: Locale }) {
                   alt={title}
                   className="object-cover"
                   fill
+                  quality={90}
                   sizes="(max-width: 700px) 78vw, 34vw"
                   src={src}
                 />
