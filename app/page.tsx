@@ -467,7 +467,7 @@ function Panel({
   return (
     <section
       className={cn(
-        'panel-surface rounded-[24px] border border-[color:var(--line)] bg-card shadow-[0_8px_30px_rgba(40,62,62,.05)]',
+        'panel-surface spatial-section',
         className,
       )}
     >
@@ -2057,7 +2057,7 @@ export default function Home() {
         id="desktop-navigation"
         inert={!settings.sidebarOpen}
         className={cn(
-          'spatial-sidebar fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col px-5 py-7 transition-[transform,visibility] duration-500 xl:flex',
+          'spatial-sidebar fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col px-5 py-7 transition-[transform,visibility] duration-500',
           settings.sidebarOpen
             ? 'visible translate-x-0'
             : 'invisible -translate-x-full pointer-events-none',
@@ -2081,12 +2081,7 @@ export default function Home() {
         </SheetContent>
       </Sheet>
 
-      <section
-        className={cn(
-          'min-h-dvh transition-[padding] duration-300',
-          settings.sidebarOpen ? 'xl:pl-[248px]' : 'xl:pl-0',
-        )}
-      >
+      <section className="min-h-dvh">
         <header className="site-header spatial-header sticky top-0 z-20 flex min-h-[74px] items-center justify-between gap-3 px-4 py-3 sm:px-8 lg:px-12">
           <button
             aria-label={tr('Open navigation', 'ਨੇਵੀਗੇਸ਼ਨ ਖੋਲ੍ਹੋ')}
@@ -2099,31 +2094,42 @@ export default function Home() {
           <h1 className="min-w-0 truncate font-heading text-lg font-semibold xl:hidden">
             {pageTitle}
           </h1>
-          <div className="hidden items-center gap-4 xl:flex">
+          <div className="hidden min-w-0 items-center gap-8 xl:flex">
             <button
-              aria-controls="desktop-navigation"
-              aria-expanded={settings.sidebarOpen}
-              aria-label={
-                settings.sidebarOpen
-                  ? tr('Close sidebar', 'ਸਾਈਡਬਾਰ ਬੰਦ ਕਰੋ')
-                  : tr('Open sidebar', 'ਸਾਈਡਬਾਰ ਖੋਲ੍ਹੋ')
-              }
-              className="header-icon-button"
-              onClick={() =>
-                setSettings((value) => ({
-                  ...value,
-                  sidebarOpen: !value.sidebarOpen,
-                }))
-              }
+              className="brand-wordmark flex items-center gap-3 text-left"
+              onClick={() => setActiveView('jaap')}
               type="button"
             >
-              {settings.sidebarOpen ? (
-                <PanelLeftClose aria-hidden="true" className="size-5" />
-              ) : (
-                <PanelLeftOpen aria-hidden="true" className="size-5" />
-              )}
+              <span className="brand-mark" aria-hidden="true">🪯</span>
+              <span>
+                <span className="block font-heading text-[1.05rem] font-semibold tracking-[-.02em]">
+                  Sehaj Jaap
+                </span>
+                <span className="block text-[10px] tracking-[.14em] text-muted-foreground uppercase">
+                  ਸਹਿਜ ਜਾਪ
+                </span>
+              </span>
             </button>
-            <h1 className="font-heading text-lg font-semibold">{pageTitle}</h1>
+            <nav className="desktop-scroll-nav flex items-center gap-1" aria-label="Primary">
+              {navItems.map(({ id, label }) => (
+                <button
+                  key={id}
+                  aria-current={
+                    activeView === id || (activeView === 'summary' && id === 'jaap')
+                      ? 'page'
+                      : undefined
+                  }
+                  className="desktop-nav-link"
+                  onClick={() => {
+                    setActiveView(id);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  type="button"
+                >
+                  {label}
+                </button>
+              ))}
+            </nav>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <span
@@ -2194,7 +2200,7 @@ export default function Home() {
         </header>
 
         {activeView === 'jaap' && (
-          <div className="view-stage mx-auto grid w-full max-w-[1200px] gap-7 px-4 pb-28 pt-2 sm:px-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:px-12 lg:pt-5 xl:pb-10">
+          <div className="view-stage scroll-story mx-auto w-full max-w-[1180px] px-4 pb-28 pt-2 sm:px-8 lg:px-12 lg:pt-5 xl:pb-16">
             <Panel className="counter-panel counter-3d-stage relative isolate flex min-h-[calc(100dvh-108px)] flex-col items-center overflow-hidden px-5 pb-7 pt-8 sm:min-h-[690px] sm:px-9 sm:pt-10 lg:min-h-[730px]">
               <div aria-hidden="true" className="halo" />
               <div className="relative z-10 text-center">
@@ -2312,7 +2318,7 @@ export default function Home() {
               </div>
             </Panel>
 
-            <aside className="floating-rail grid content-start gap-5 lg:pt-5">
+            <aside className="floating-rail story-rail grid content-start gap-5 lg:grid-cols-3">
               <Panel className="goal-orbit-panel p-6">
                 <div className="flex items-center justify-between gap-4">
                   <div>
@@ -2768,7 +2774,7 @@ export default function Home() {
                   </Panel>
                 </div>
 
-                <div className="grid content-start gap-6">
+                <div className="profile-strip grid content-start gap-6 lg:grid-cols-2">
                   <Panel className="p-6">
                     <div className="flex items-center justify-between">
                       <h2 className="text-xl font-semibold">{tr('Members', 'ਮੈਂਬਰ')}</h2>
@@ -2833,7 +2839,7 @@ export default function Home() {
 
         {activeView === 'progress' && (
           <div className="view-stage mx-auto w-full max-w-[1120px] px-4 pb-28 pt-3 sm:px-8 lg:px-12 xl:pb-12">
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="metric-ribbon grid gap-0 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 { label: tr('This week', 'ਇਸ ਹਫ਼ਤੇ'), value: formatNumber(weekTotal), icon: MousePointerClick },
                 { label: tr('Malas', 'ਮਾਲਾ'), value: formatNumber(Math.floor(weekTotal / settings.malaSize)), icon: Target },
@@ -2980,7 +2986,7 @@ export default function Home() {
         )}
 
         {activeView === 'more' && (
-          <div className="view-stage mx-auto grid w-full max-w-[1120px] gap-6 px-4 pb-28 pt-3 sm:px-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:px-12 xl:pb-12">
+          <div className="view-stage editorial-flow mx-auto w-full max-w-[1120px] px-4 pb-28 pt-3 sm:px-8 lg:px-12 xl:pb-16">
             <Panel className="p-6 sm:p-8">
               <div>
                 <h2 className="settings-section-label">{tr('Practice', 'ਅਭਿਆਸ')}</h2>
@@ -3195,7 +3201,7 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-12">
+              <div className="heritage-scroll-sequence">
                 <HeritageCard
                   alt="Sri Harmandir Sahib reflected in the sarovar at Amritsar"
                   className="lg:col-span-7 lg:min-h-[360px]"
