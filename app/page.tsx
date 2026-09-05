@@ -46,6 +46,9 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 
+import { BrandMark, SehajBrand } from '@/components/brand/sehaj-brand';
+import { HeritageExperience } from '@/components/heritage/heritage-experience';
+
 import {
   Dialog,
   DialogContent,
@@ -70,7 +73,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 
 type Locale = 'en' | 'pa';
-type View = 'jaap' | 'sangat' | 'focus' | 'progress' | 'more' | 'summary';
+type View = 'jaap' | 'sangat' | 'focus' | 'progress' | 'heritage' | 'more' | 'summary';
 type FocusMode = 'timer' | 'target' | 'both' | 'paced';
 type Privacy = 'exact' | 'practiced' | 'private';
 
@@ -457,21 +460,6 @@ function softCue() {
   oscillator.addEventListener('ended', () => void context.close());
 }
 
-function BrandMark({ className }: { className?: string }) {
-  return (
-    <span className={cn('brand-logo-shell', className)} aria-hidden="true">
-      <Image
-        alt=""
-        className="size-full"
-        height={48}
-        priority
-        src="/sehaj-jaap-mark.svg"
-        width={48}
-      />
-    </span>
-  );
-}
-
 function Panel({
   children,
   className,
@@ -515,74 +503,6 @@ function SettingRow({
       </div>
       <div className="setting-control shrink-0">{children}</div>
     </div>
-  );
-}
-
-function HeritageCard({
-  src,
-  alt,
-  eyebrow,
-  title,
-  description,
-  credit,
-  sourceUrl,
-  className,
-  imageClassName,
-  priority = false,
-}: {
-  src: string;
-  alt: string;
-  eyebrow: string;
-  title: string;
-  description: string;
-  credit: string;
-  sourceUrl?: string;
-  className?: string;
-  imageClassName?: string;
-  priority?: boolean;
-}) {
-  return (
-    <article
-      className={cn(
-        'heritage-card group relative isolate min-h-[280px] overflow-hidden rounded-[24px] border border-white/20 bg-primary text-white shadow-[0_18px_48px_rgba(16,40,46,.14)]',
-        className,
-      )}
-    >
-      <Image
-        alt={alt}
-        className={cn('heritage-card-image object-cover', imageClassName)}
-        fill
-        priority={priority}
-        sizes="(max-width: 640px) 92vw, (max-width: 1024px) 46vw, 420px"
-        src={src}
-      />
-      <div aria-hidden="true" className="heritage-card-overlay absolute inset-0" />
-      <div className="relative z-10 flex min-h-[inherit] flex-col justify-end p-5 sm:p-6">
-        <p className="text-[11px] font-semibold tracking-[.15em] text-white/70 uppercase">
-          {eyebrow}
-        </p>
-        <h3 className="mt-1 font-heading text-xl font-semibold tracking-[-.02em] sm:text-2xl">
-          {title}
-        </h3>
-        <p className="mt-2 max-w-md text-sm leading-6 text-white/72">
-          {description}
-        </p>
-        {sourceUrl ? (
-          <a
-            className="heritage-credit mt-4 w-fit text-[11px] text-white/62 underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-            href={sourceUrl}
-            rel="noreferrer"
-            target="_blank"
-          >
-            {credit}
-          </a>
-        ) : (
-          <span className="heritage-credit mt-4 w-fit text-[11px] text-white/62">
-            {credit}
-          </span>
-        )}
-      </div>
-    </article>
   );
 }
 
@@ -1601,9 +1521,9 @@ export default function Home() {
       icon: BarChart3,
     },
     {
-      id: 'more' as const,
-      label: tr('More', 'ਹੋਰ'),
-      icon: Settings2,
+      id: 'heritage' as const,
+      label: tr('Heritage', 'ਵਿਰਾਸਤ'),
+      icon: History,
     },
   ];
 
@@ -1721,13 +1641,7 @@ export default function Home() {
             />
             <div className="auth-visual-overlay absolute inset-0" />
             <div className="relative z-10 flex min-h-[inherit] flex-col p-6 sm:p-9 lg:min-h-full lg:p-12">
-              <div className="flex items-center gap-3">
-                <BrandMark className="size-11 shrink-0" />
-                <div>
-                  <p className="font-heading text-xl font-semibold">Sehaj Jaap</p>
-                  <p className="font-gurmukhi text-sm text-white/65">ਸਹਿਜ ਜਾਪ</p>
-                </div>
-              </div>
+              <SehajBrand inverse />
               <div className="mt-auto max-w-lg pt-14">
                 <h1 className="font-heading text-[clamp(2.35rem,5vw,4rem)] font-semibold leading-[1.06] tracking-[-.04em] text-white">
                   {tr('A peaceful space for Naam Simran.', 'ਨਾਮ ਸਿਮਰਨ ਲਈ ਇੱਕ ਸ਼ਾਂਤ ਥਾਂ।')}
@@ -2006,9 +1920,11 @@ export default function Home() {
           ? tr('Focus', 'ਧਿਆਨ')
           : activeView === 'progress'
             ? tr('Progress', 'ਪ੍ਰਗਤੀ')
-            : activeView === 'summary'
-              ? tr('Summary', 'ਸਾਰ')
-              : tr('More', 'ਹੋਰ');
+            : activeView === 'heritage'
+              ? tr('Heritage', 'ਵਿਰਾਸਤ')
+              : activeView === 'summary'
+                ? tr('Summary', 'ਸਾਰ')
+                : tr('More', 'ਹੋਰ');
 
   const navigationContent = (mobile = false) => (
     <>
@@ -2020,13 +1936,7 @@ export default function Home() {
         }}
         type="button"
       >
-        <BrandMark className="size-11 shrink-0" />
-        <span>
-          <span className="block font-heading text-[1.12rem] font-semibold tracking-[-.02em]">
-            Sehaj Jaap
-          </span>
-          <span className="block text-xs text-muted-foreground">ਸਹਿਜ ਜਾਪ</span>
-        </span>
+        <SehajBrand />
       </button>
 
       <nav aria-label={mobile ? 'Mobile menu' : 'Primary'} className="mt-12 grid gap-2">
@@ -2140,15 +2050,7 @@ export default function Home() {
               onClick={() => goToView('jaap')}
               type="button"
             >
-              <BrandMark className="size-[38px] shrink-0" />
-              <span>
-                <span className="block font-heading text-[1.05rem] font-semibold tracking-[-.02em]">
-                  Sehaj Jaap
-                </span>
-                <span className="block text-[10px] tracking-[.14em] text-muted-foreground uppercase">
-                  ਸਹਿਜ ਜਾਪ
-                </span>
-              </span>
+              <SehajBrand />
             </button>
             <nav className="desktop-scroll-nav flex items-center gap-1" aria-label="Primary">
               {navItems.map(({ id, label }) => (
@@ -2461,6 +2363,73 @@ export default function Home() {
                 <ChevronRight aria-hidden="true" className="relative z-10 size-4 text-white/75 transition-transform group-hover:translate-x-0.5" />
               </button>
             </aside>
+
+            <section className="home-scroll-journey">
+              <div className="home-scroll-copy">
+                <p className="eyebrow">{tr('Your practice, over time', 'ਸਮੇਂ ਨਾਲ ਤੁਹਾਡਾ ਅਭਿਆਸ')}</p>
+                <h2>
+                  {tr(
+                    'One quiet repetition becomes a journey.',
+                    'ਇੱਕ ਸ਼ਾਂਤ ਜਾਪ ਇੱਕ ਯਾਤਰਾ ਬਣ ਜਾਂਦਾ ਹੈ।',
+                  )}
+                </h2>
+                <p>
+                  {tr(
+                    'The interface opens up as you scroll: practice first, then reflection, Sangat and heritage. Nothing competes with the counter.',
+                    'ਸਕ੍ਰੋਲ ਨਾਲ ਇੰਟਰਫੇਸ ਹੌਲੀ-ਹੌਲੀ ਖੁਲ੍ਹਦਾ ਹੈ: ਪਹਿਲਾਂ ਅਭਿਆਸ, ਫਿਰ ਮਨਨ, ਸੰਗਤ ਅਤੇ ਵਿਰਾਸਤ। ਕਾਊਂਟਰ ਨਾਲ ਕੁਝ ਵੀ ਮੁਕਾਬਲਾ ਨਹੀਂ ਕਰਦਾ।',
+                  )}
+                </p>
+              </div>
+
+              <div className="home-journey-metrics" aria-label={tr('Practice overview', 'ਅਭਿਆਸ ਦੀ ਝਲਕ')}>
+                <div>
+                  <strong>{formatNumber(weekTotal)}</strong>
+                  <span>{tr('This week', 'ਇਸ ਹਫ਼ਤੇ')}</span>
+                </div>
+                <div>
+                  <strong>{currentStreak}</strong>
+                  <span>{tr('Day streak', 'ਦਿਨਾਂ ਦੀ ਲੜੀ')}</span>
+                </div>
+                <div>
+                  <strong>{formatNumber(Math.floor(weekTotal / settings.malaSize))}</strong>
+                  <span>{tr('Mala this week', 'ਇਸ ਹਫ਼ਤੇ ਮਾਲਾ')}</span>
+                </div>
+              </div>
+
+              <button
+                className="home-film-link"
+                onClick={() => goToView('heritage')}
+                type="button"
+              >
+                <video
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  poster="/heritage-user-03.webp"
+                  preload="metadata"
+                >
+                  <source src="/heritage-motion-02.webm" type="video/webm" />
+                </video>
+                <span className="home-film-link-scrim" aria-hidden="true" />
+                <span className="home-film-link-copy">
+                  <span className="eyebrow text-white/65">{tr('Heritage', 'ਵਿਰਾਸਤ')}</span>
+                  <strong>{tr('Continue into living history', 'ਜੀਵੰਤ ਇਤਿਹਾਸ ਵੱਲ ਅੱਗੇ ਵਧੋ')}</strong>
+                  <span>{tr('Explore the visual story', 'ਦ੍ਰਿਸ਼ ਕਹਾਣੀ ਵੇਖੋ')} →</span>
+                </span>
+              </button>
+
+              <div className="home-journey-actions">
+                <button onClick={() => goToView('progress')} type="button">
+                  <span>{tr('See your journey', 'ਆਪਣੀ ਯਾਤਰਾ ਵੇਖੋ')}</span>
+                  <ChevronRight aria-hidden="true" />
+                </button>
+                <button onClick={() => goToView('sangat')} type="button">
+                  <span>{tr('Practice with Sangat', 'ਸੰਗਤ ਨਾਲ ਅਭਿਆਸ ਕਰੋ')}</span>
+                  <ChevronRight aria-hidden="true" />
+                </button>
+              </div>
+            </section>
           </div>
         )}
 
@@ -3276,108 +3245,11 @@ export default function Home() {
               )}
             </div>
 
-            <section className="heritage-gallery">
-              <div className="heritage-intro">
-                <div>
-                  <p className="eyebrow">{tr('Sacred moments', 'ਪਵਿੱਤਰ ਪਲ')}</p>
-                  <h2 className="page-heading">{tr('Heritage in living light', 'ਜੀਵੰਤ ਰੌਸ਼ਨੀ ਵਿੱਚ ਵਿਰਾਸਤ')}</h2>
-                </div>
-                <p className="max-w-md text-sm leading-6 text-muted-foreground">
-                  {tr(
-                    'A quiet visual journey through architecture, light and Sangat. The photographs you supplied are presented with their original watermark intact.',
-                    'ਇਮਾਰਤ, ਰੌਸ਼ਨੀ ਅਤੇ ਸੰਗਤ ਰਾਹੀਂ ਇੱਕ ਸ਼ਾਂਤ ਦ੍ਰਿਸ਼ ਯਾਤਰਾ। ਤੁਹਾਡੇ ਦਿੱਤੇ ਫੋਟੋ ਆਪਣੇ ਮੂਲ ਵਾਟਰਮਾਰਕ ਨਾਲ ਪੇਸ਼ ਕੀਤੇ ਗਏ ਹਨ।',
-                  )}
-                </p>
-              </div>
-
-              <div className="heritage-motion-feature">
-                <video
-                  autoPlay
-                  className="heritage-motion-video"
-                  loop
-                  muted
-                  playsInline
-                  poster="/heritage-user-03.webp"
-                  preload="metadata"
-                >
-                  <source src="/heritage-motion-01.webm" type="video/webm" />
-                </video>
-                <div aria-hidden="true" className="heritage-motion-overlay" />
-                <div className="heritage-motion-copy">
-                  <p className="eyebrow text-white/70">{tr('Night darshan', 'ਰਾਤ ਦਾ ਦਰਸ਼ਨ')}</p>
-                  <h3>{tr('Stillness, light, and Sangat.', 'ਸ਼ਾਂਤੀ, ਰੌਸ਼ਨੀ ਅਤੇ ਸੰਗਤ।')}</h3>
-                  <p>
-                    {tr(
-                      'A short atmospheric loop from the media you shared, used as part of the interface rather than as decorative clutter.',
-                      'ਤੁਹਾਡੇ ਸਾਂਝੇ ਕੀਤੇ ਮੀਡੀਆ ਦੀ ਇੱਕ ਛੋਟੀ ਝਲਕ, ਸਿਰਫ਼ ਸਜਾਵਟ ਨਹੀਂ ਸਗੋਂ ਇੰਟਰਫੇਸ ਦਾ ਹਿੱਸਾ।',
-                    )}
-                  </p>
-                </div>
-              </div>
-
-              <div className="heritage-photo-triptych">
-                <HeritageCard
-                  alt="Illuminated gurdwara façade at night"
-                  credit="Supplied photo · AZAAD MEDIA watermark retained"
-                  description={tr(
-                    'The illuminated façade framed against the night sky.',
-                    'ਰਾਤ ਦੇ ਆਕਾਸ਼ ਵਿੱਚ ਰੌਸ਼ਨ ਇਮਾਰਤ ਦੀ ਝਲਕ।',
-                  )}
-                  eyebrow={tr('Night light', 'ਰਾਤ ਦੀ ਰੌਸ਼ਨੀ')}
-                  priority
-                  src="/heritage-user-01.webp"
-                  title={tr('A luminous presence', 'ਰੌਸ਼ਨ ਹਾਜ਼ਰੀ')}
-                />
-                <HeritageCard
-                  alt="Close view of the illuminated dome and architecture"
-                  credit="Supplied photo · AZAAD MEDIA watermark retained"
-                  description={tr(
-                    'A closer study of the dome, marble detail and illuminated forms.',
-                    'ਗੁੰਬਦ, ਸੰਗਮਰਮਰ ਅਤੇ ਰੌਸ਼ਨ ਨਕਸ਼ਕਾਰੀ ਦੀ ਨੇੜਲੀ ਝਲਕ।',
-                  )}
-                  eyebrow={tr('Sacred detail', 'ਪਵਿੱਤਰ ਵਿਸਥਾਰ')}
-                  src="/heritage-user-02.webp"
-                  title={tr('Architecture in light', 'ਰੌਸ਼ਨੀ ਵਿੱਚ ਵਾਸਤੁਕਲਾ')}
-                />
-                <HeritageCard
-                  alt="Gurdwara viewed from the courtyard beneath tall Nishan Sahib poles"
-                  credit="Supplied photo · AZAAD MEDIA watermark retained"
-                  description={tr(
-                    'A wider courtyard perspective with the Sangat moving through the space.',
-                    'ਵਿਸ਼ਾਲ ਪਰਿਸਰ ਵਿੱਚ ਸੰਗਤ ਦੀ ਚਲਹਲ-ਪਹਿਲ ਵਾਲਾ ਦ੍ਰਿਸ਼।',
-                  )}
-                  eyebrow={tr('Sangat', 'ਸੰਗਤ')}
-                  src="/heritage-user-03.webp"
-                  title={tr('A living gathering', 'ਜੀਵੰਤ ਸੰਗਤ')}
-                />
-              </div>
-
-              <div className="heritage-motion-note">
-                <div className="heritage-motion-note-copy">
-                  <p className="eyebrow">{tr('Heritage in motion', 'ਚਲਦੀ ਵਿਰਾਸਤ')}</p>
-                  <h3>{tr('A slower, more human interface.', 'ਹੌਲਾ, ਹੋਰ ਮਨੁੱਖੀ ਇੰਟਰਫੇਸ।')}</h3>
-                  <p>
-                    {tr(
-                      'Motion is kept deliberate: media appears as you scroll, hover reveals detail, and the navigation transitions without abrupt page changes.',
-                      'ਮੋਸ਼ਨ ਨੂੰ ਸੋਚ-ਸਮਝ ਕੇ ਰੱਖਿਆ ਗਿਆ ਹੈ: ਸਕ੍ਰੋਲ ਨਾਲ ਮੀਡੀਆ ਉਭਰਦਾ ਹੈ, ਹੋਵਰ ਨਾਲ ਵਿਸਥਾਰ ਦਿਖਦਾ ਹੈ ਅਤੇ ਨੇਵੀਗੇਸ਼ਨ ਨਰਮੀ ਨਾਲ ਬਦਲਦੀ ਹੈ।',
-                    )}
-                  </p>
-                </div>
-                <div className="heritage-motion-note-media">
-                  <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    poster="/heritage-user-02.webp"
-                    preload="metadata"
-                  >
-                    <source src="/heritage-motion-02.webm" type="video/webm" />
-                  </video>
-                </div>
-              </div>
-            </section>
           </div>
+        )}
+
+        {activeView === 'heritage' && (
+          <HeritageExperience locale={locale} />
         )}
 
         {activeView === 'summary' && summary && (
