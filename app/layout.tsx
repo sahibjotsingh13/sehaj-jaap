@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { SmoothEffects } from '@/components/motion/smooth-effects';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -14,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased">{children}</body>
+      <body className="antialiased"><SmoothEffects />{children}</body>
     </html>
   );
 }
