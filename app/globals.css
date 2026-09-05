@@ -1445,3 +1445,504 @@ body {
     animation: none !important;
   }
 }
+
+
+/* Scroll-led editorial redesign */
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 108px;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+/* A single calm floating header instead of a dashboard shell */
+.spatial-header {
+  top: 12px !important;
+  width: min(calc(100% - 28px), 1180px);
+  min-height: 64px !important;
+  margin: 12px auto 0;
+  border: 1px solid rgba(255,255,255,.68);
+  border-radius: 999px;
+  background: rgba(251,248,239,.68);
+  box-shadow:
+    0 18px 48px rgba(31,59,61,.08),
+    inset 0 1px 0 rgba(255,255,255,.82);
+  backdrop-filter: blur(28px) saturate(135%);
+  transition:
+    background-color 320ms ease,
+    box-shadow 320ms ease,
+    transform 320ms cubic-bezier(.2,.8,.2,1);
+}
+
+.brand-wordmark {
+  flex: 0 0 auto;
+  color: var(--foreground);
+}
+
+.brand-mark {
+  display: grid;
+  width: 38px;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 36% 28%, rgba(255,255,255,.88), transparent 25%),
+    linear-gradient(145deg, rgba(239,224,184,.92), rgba(225,238,231,.88));
+  box-shadow:
+    0 10px 24px rgba(36,68,74,.08),
+    inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.desktop-scroll-nav {
+  position: relative;
+  min-width: 0;
+}
+
+.desktop-nav-link {
+  position: relative;
+  padding: .62rem .82rem;
+  border-radius: 999px;
+  color: var(--muted-foreground);
+  font-size: .83rem;
+  font-weight: 650;
+  transition:
+    color 220ms ease,
+    background-color 220ms ease,
+    transform 220ms ease;
+}
+
+.desktop-nav-link::after {
+  content: '';
+  position: absolute;
+  left: 34%;
+  right: 34%;
+  bottom: .26rem;
+  height: 1px;
+  border-radius: 99px;
+  background: var(--saffron);
+  opacity: 0;
+  transform: scaleX(.4);
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.desktop-nav-link[aria-current='page'] {
+  color: var(--primary);
+  background: rgba(255,255,255,.42);
+}
+
+.desktop-nav-link[aria-current='page']::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+/* Generic content is no longer rendered as cards. */
+.spatial-section {
+  position: relative;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.spatial-section::before {
+  content: none;
+}
+
+.view-stage {
+  padding-top: clamp(1.5rem, 4vw, 4rem);
+  animation: page-drift-in 560ms cubic-bezier(.16,1,.3,1) both;
+}
+
+.view-stage > .spatial-section,
+.view-stage > div > .spatial-section,
+.view-stage > aside > .spatial-section {
+  animation: none;
+}
+
+/* Main Jaap becomes a scroll narrative: one hero, then a sparse utility scene. */
+.scroll-story {
+  perspective: 1400px;
+}
+
+.scroll-story .counter-3d-stage {
+  min-height: min(860px, calc(100svh - 102px));
+  margin-inline: auto;
+  border: 1px solid rgba(255,255,255,.7);
+  border-radius: clamp(28px, 4vw, 52px);
+  background:
+    radial-gradient(circle at 50% 39%, rgba(231,240,233,.9) 0 17%, rgba(231,240,233,.17) 42%, transparent 55%),
+    radial-gradient(circle at 78% 15%, rgba(240,213,140,.13), transparent 18rem),
+    linear-gradient(145deg, rgba(255,255,255,.62), rgba(247,242,229,.34));
+  box-shadow:
+    0 48px 130px rgba(34,67,69,.1),
+    inset 0 1px 0 rgba(255,255,255,.85);
+  backdrop-filter: blur(26px) saturate(120%);
+}
+
+.story-rail {
+  min-height: 72svh;
+  align-items: center;
+  margin-top: clamp(5rem, 12vh, 10rem);
+  padding-block: clamp(3rem, 8vh, 7rem);
+  border-top: 1px solid rgba(117,89,37,.09);
+  border-bottom: 1px solid rgba(117,89,37,.09);
+}
+
+.story-rail > * {
+  min-height: 230px;
+}
+
+.goal-orbit-panel,
+.story-rail .depth-action,
+.story-rail .practice-link-card {
+  border: 1px solid rgba(255,255,255,.62);
+  border-radius: 30px;
+  background:
+    linear-gradient(145deg, rgba(255,255,255,.5), rgba(255,253,247,.26));
+  box-shadow:
+    0 24px 62px rgba(35,67,69,.075),
+    inset 0 1px 0 rgba(255,255,255,.74);
+  backdrop-filter: blur(22px);
+}
+
+.story-rail .depth-action-primary {
+  background:
+    radial-gradient(circle at 82% 8%, rgba(240,213,140,.16), transparent 10rem),
+    linear-gradient(145deg, #294d53, #173b46);
+}
+
+/* Progress page: metrics read like editorial figures, not four cards. */
+.metric-ribbon {
+  margin-bottom: clamp(4rem, 8vh, 7rem);
+  border-block: 1px solid rgba(117,89,37,.1);
+}
+
+.metric-ribbon > .spatial-section {
+  min-height: 150px;
+  border-right: 1px solid rgba(117,89,37,.09);
+  padding: 1.4rem 1.5rem;
+}
+
+.metric-ribbon > .spatial-section:last-child {
+  border-right: 0;
+}
+
+.metric-ribbon > .spatial-section svg {
+  opacity: .7;
+}
+
+.metric-ribbon > .spatial-section p:nth-of-type(1) {
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+}
+
+/* Charts, calendar, settings and Sangat remain open content sections. */
+.view-stage .calendar-panel,
+.view-stage .calendar-panel.spatial-section {
+  border-left: 1px solid rgba(117,89,37,.1);
+  padding-left: clamp(1.5rem, 4vw, 3rem);
+}
+
+.view-stage .setting-row {
+  min-height: 88px;
+  padding-block: 1.15rem;
+  border-color: rgba(117,89,37,.08);
+}
+
+.view-stage .setting-row > span:first-child {
+  border: 0;
+  border-radius: 50%;
+  background: rgba(139,163,151,.12);
+  box-shadow: none;
+}
+
+.view-stage .choice-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .55rem;
+}
+
+.view-stage .choice-chip {
+  min-height: 42px;
+  border-radius: 999px;
+  padding-inline: 1rem;
+  background: rgba(255,255,255,.3);
+  box-shadow: none;
+}
+
+.view-stage .mode-card {
+  min-height: 78px;
+  border-width: 0 0 1px;
+  border-radius: 0;
+  background: transparent;
+  padding-inline: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+/* Settings/Profile page is one long editorial scroll rather than nested cards. */
+.editorial-flow > .spatial-section {
+  max-width: 860px;
+  margin-inline: auto;
+}
+
+.profile-strip {
+  max-width: 860px;
+  margin: clamp(5rem, 10vh, 8rem) auto 0;
+  padding-block: 2rem;
+  border-block: 1px solid rgba(117,89,37,.1);
+}
+
+.profile-strip > .spatial-section {
+  min-height: 180px;
+  padding: 1.5rem 0;
+}
+
+.profile-strip > .spatial-section + .spatial-section {
+  border-left: 1px solid rgba(117,89,37,.1);
+  padding-left: 2rem;
+}
+
+/* Heritage is now a cinematic vertical sequence, not a card gallery. */
+.heritage-gallery {
+  margin-top: clamp(6rem, 14vh, 12rem);
+}
+
+.heritage-scroll-sequence {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(5rem, 14vh, 11rem);
+  margin-top: clamp(3rem, 7vh, 6rem);
+}
+
+.heritage-scroll-sequence .heritage-card {
+  width: min(82%, 880px);
+  min-height: min(72svh, 720px);
+  align-self: flex-start;
+  border-radius: 38px 38px 68px 38px;
+  box-shadow:
+    0 46px 110px rgba(16,40,46,.2),
+    inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.heritage-scroll-sequence .heritage-card:nth-child(even) {
+  align-self: flex-end;
+  border-radius: 68px 38px 38px 38px;
+}
+
+.heritage-scroll-sequence .heritage-card::after {
+  content: '';
+  position: absolute;
+  inset: auto 10% -48px;
+  height: 72px;
+  z-index: -1;
+  border-radius: 50%;
+  background: rgba(17,49,53,.15);
+  filter: blur(34px);
+  transform: rotateX(72deg);
+}
+
+.heritage-scroll-sequence .heritage-card > div:last-child {
+  padding: clamp(1.5rem, 4vw, 3rem);
+}
+
+.heritage-scroll-sequence .heritage-card h3 {
+  max-width: 620px;
+  font-size: clamp(1.8rem, 4vw, 3.4rem);
+  line-height: 1.02;
+}
+
+.heritage-scroll-sequence .heritage-card p {
+  max-width: 620px;
+}
+
+/* More restrained interactive surfaces */
+.primary-action,
+.outline-action,
+.secondary-control {
+  transition:
+    transform 260ms cubic-bezier(.2,.8,.2,1),
+    box-shadow 260ms ease,
+    background-color 220ms ease;
+}
+
+.outline-action,
+.secondary-control {
+  border-width: 0 0 1px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.secondary-control {
+  min-height: 44px;
+}
+
+.counter-shortcuts,
+.counter-actions {
+  border-top: 1px solid rgba(117,89,37,.08);
+  padding-top: .75rem;
+}
+
+.spatial-dock {
+  left: 50% !important;
+  right: auto !important;
+  width: min(calc(100% - 24px), 520px);
+  transform: translateX(-50%);
+  border-color: rgba(255,255,255,.62);
+  background: rgba(251,248,239,.7);
+}
+
+/* Smooth, cinematic page and scroll motion */
+@keyframes page-drift-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0) scale(.992);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0,0,0) scale(1);
+  }
+}
+
+@keyframes scroll-depth-in {
+  from {
+    opacity: .2;
+    transform: translate3d(0, 70px, -60px) rotateX(4deg) scale(.96);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0,0,0) rotateX(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@supports (animation-timeline: view()) {
+  .story-rail > *,
+  .view-stage > .spatial-section,
+  .view-stage > div > .spatial-section,
+  .heritage-scroll-sequence .heritage-card,
+  .profile-strip > *,
+  .metric-ribbon > * {
+    animation-name: scroll-depth-in;
+    animation-duration: 1ms;
+    animation-fill-mode: both;
+    animation-timing-function: linear;
+    animation-timeline: view();
+    animation-range: entry 8% cover 38%;
+  }
+
+  .heritage-scroll-sequence .heritage-card:nth-child(even) {
+    animation-range: entry 5% cover 34%;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .desktop-nav-link:hover {
+    color: var(--foreground);
+    background: rgba(255,255,255,.3);
+    transform: translateY(-1px);
+  }
+
+  .story-rail > *:hover {
+    transform: translateY(-6px);
+  }
+
+  .metric-ribbon > .spatial-section:hover {
+    transform: translateY(-3px);
+  }
+
+  .heritage-scroll-sequence .heritage-card:hover {
+    transform: translateY(-10px) rotateX(1deg) rotateY(-.8deg);
+  }
+}
+
+@media (max-width: 1279px) {
+  .spatial-header {
+    width: min(calc(100% - 20px), 980px);
+  }
+}
+
+@media (max-width: 767px) {
+  html {
+    scroll-padding-top: 88px;
+  }
+
+  .spatial-header {
+    top: 8px !important;
+    width: calc(100% - 16px);
+    margin-top: 8px;
+    min-height: 58px !important;
+    padding-inline: .65rem !important;
+  }
+
+  .scroll-story .counter-3d-stage {
+    min-height: calc(100svh - 86px);
+    border-radius: 28px;
+  }
+
+  .story-rail {
+    min-height: auto;
+    margin-top: 4rem;
+    padding-block: 4rem;
+  }
+
+  .story-rail > * {
+    min-height: 170px;
+  }
+
+  .metric-ribbon > .spatial-section {
+    border-right: 0;
+    border-bottom: 1px solid rgba(117,89,37,.08);
+  }
+
+  .view-stage .calendar-panel,
+  .view-stage .calendar-panel.spatial-section {
+    border-left: 0;
+    padding-left: inherit;
+  }
+
+  .profile-strip {
+    display: block;
+  }
+
+  .profile-strip > .spatial-section + .spatial-section {
+    border-left: 0;
+    border-top: 1px solid rgba(117,89,37,.08);
+    padding-left: 0;
+  }
+
+  .heritage-scroll-sequence {
+    gap: 4rem;
+  }
+
+  .heritage-scroll-sequence .heritage-card,
+  .heritage-scroll-sequence .heritage-card:nth-child(even) {
+    width: 100%;
+    min-height: 62svh;
+    align-self: stretch;
+    border-radius: 28px 28px 44px 28px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .story-rail > *,
+  .view-stage > .spatial-section,
+  .view-stage > div > .spatial-section,
+  .heritage-scroll-sequence .heritage-card,
+  .profile-strip > *,
+  .metric-ribbon > * {
+    animation: none !important;
+    filter: none !important;
+    transform: none !important;
+  }
+}
