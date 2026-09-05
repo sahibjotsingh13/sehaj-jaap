@@ -184,8 +184,7 @@ const LAST_ACCOUNT_KEY = 'sehaj-jaap-last-account';
 const LOCAL_ACCOUNTS_KEY = 'sehaj-jaap-local-accounts-v1';
 const LOCAL_SESSION_KEY = 'sehaj-jaap-local-session-v1';
 const LOCAL_PASSWORD_ITERATIONS = 210_000;
-const SHARED_ACCOUNT_API =
-  'https://vzkmcodmfxegxzsackfv.supabase.co/functions/v1/sehaj-account';
+const SHARED_ACCOUNT_API = '/api/account';
 const SHARED_ACCOUNT_TOKEN_KEY = 'sehaj-jaap-shared-account-token-v1';
 const DB_NAME = 'sehaj-jaap';
 
