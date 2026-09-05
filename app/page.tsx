@@ -1636,8 +1636,10 @@ export default function Home() {
               className="object-cover"
               fill
               priority
+              quality={94}
               sizes="(max-width: 1024px) 100vw, 55vw"
-              src="/heritage-user-01.webp"
+              src="/golden-temple.jpg"
+              style={{ objectPosition: 'center 48%' }}
             />
             <div className="auth-visual-overlay absolute inset-0" />
             <div className="relative z-10 flex min-h-[inherit] flex-col p-6 sm:p-9 lg:min-h-full lg:p-12">
@@ -2150,20 +2152,11 @@ export default function Home() {
                   className="counter-cinematic-photo object-cover"
                   fill
                   priority
+                  quality={94}
                   sizes="(max-width: 1180px) 100vw, 1180px"
-                  src="/heritage-user-01.webp"
+                  src="/golden-temple.jpg"
+                  style={{ objectPosition: 'center 50%' }}
                 />
-                <video
-                  autoPlay
-                  className="counter-cinematic-video"
-                  loop
-                  muted
-                  playsInline
-                  poster="/heritage-user-01.webp"
-                  preload="metadata"
-                >
-                  <source src="/heritage-motion-01.webm" type="video/webm" />
-                </video>
                 <span className="counter-cinematic-wash" />
               </div>
               <div aria-hidden="true" className="halo" />
@@ -2288,8 +2281,10 @@ export default function Home() {
                   alt=""
                   className="story-card-media object-cover"
                   fill
+                  quality={90}
                   sizes="(max-width: 1024px) 100vw, 33vw"
-                  src="/heritage-user-02.webp"
+                  src="/hazur-sahib.jpg"
+                  style={{ objectPosition: 'center 44%' }}
                 />
                 <span aria-hidden="true" className="story-card-scrim" />
                 <div className="relative z-10 flex items-center justify-between gap-4">
@@ -2321,8 +2316,10 @@ export default function Home() {
                   alt=""
                   className="story-card-media object-cover"
                   fill
+                  quality={90}
                   sizes="(max-width: 1024px) 100vw, 33vw"
-                  src="/heritage-user-03.webp"
+                  src="/bangla-sahib.jpg"
+                  style={{ objectPosition: 'center 48%' }}
                 />
                 <span aria-hidden="true" className="story-card-scrim story-card-scrim-dark" />
                 <span className="relative z-10">
@@ -2345,8 +2342,10 @@ export default function Home() {
                   alt=""
                   className="story-card-media object-cover"
                   fill
+                  quality={90}
                   sizes="(max-width: 1024px) 100vw, 33vw"
-                  src="/heritage-user-01.webp"
+                  src="/golden-temple.jpg"
+                  style={{ objectPosition: 'center 50%' }}
                 />
                 <span aria-hidden="true" className="story-card-scrim" />
                 <span className="relative z-10 grid size-12 shrink-0 place-items-center rounded-2xl bg-white/70 text-primary backdrop-blur-md">
@@ -2401,16 +2400,15 @@ export default function Home() {
                 onClick={() => goToView('heritage')}
                 type="button"
               >
-                <video
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  poster="/heritage-user-03.webp"
-                  preload="metadata"
-                >
-                  <source src="/heritage-motion-02.webm" type="video/webm" />
-                </video>
+                <Image
+                  alt=""
+                  className="home-film-link-image object-cover"
+                  fill
+                  quality={94}
+                  sizes="(max-width: 1180px) 100vw, 1180px"
+                  src="/bangla-sahib.jpg"
+                  style={{ objectPosition: 'center 48%' }}
+                />
                 <span className="home-film-link-scrim" aria-hidden="true" />
                 <span className="home-film-link-copy">
                   <span className="eyebrow text-white/65">{tr('Heritage', 'ਵਿਰਾਸਤ')}</span>
@@ -2442,8 +2440,10 @@ export default function Home() {
                   className="object-cover"
                   fill
                   priority
+                  quality={94}
                   sizes="(max-width: 1120px) 100vw, 1120px"
-                  src="/heritage-user-02.webp"
+                  src="/hazur-sahib.jpg"
+                  style={{ objectPosition: 'center 43%' }}
                 />
                 <span className="focus-setup-hero-wash" />
               </div>
@@ -2641,16 +2641,16 @@ export default function Home() {
         {activeView === 'sangat' && (
           <div className="view-stage sangat-experience mx-auto w-full max-w-[1180px] px-4 pb-28 pt-3 sm:px-8 lg:px-12 xl:pb-16">
             <section className="sangat-hero-scroll">
-              <video
-                autoPlay
-                loop
-                muted
-                playsInline
-                poster="/heritage-user-03.webp"
-                preload="metadata"
-              >
-                <source src="/heritage-motion-01.webm" type="video/webm" />
-              </video>
+              <Image
+                alt=""
+                className="sangat-hero-image object-cover"
+                fill
+                priority
+                quality={94}
+                sizes="(max-width: 1180px) 100vw, 1180px"
+                src="/bangla-sahib.jpg"
+                style={{ objectPosition: 'center 50%' }}
+              />
               <span className="sangat-hero-scrim" aria-hidden="true" />
               <div className="sangat-hero-copy">
                 <p className="eyebrow text-white/65">{tr('Sangat', 'ਸੰਗਤ')}</p>
@@ -3342,8 +3342,10 @@ export default function Home() {
                   alt=""
                   className="object-cover"
                   fill
+                  quality={92}
                   sizes="(max-width: 980px) 100vw, 980px"
-                  src="/heritage-user-01.webp"
+                  src="/golden-temple.jpg"
+                  style={{ objectPosition: 'center 50%' }}
                 />
                 <span />
               </div>
