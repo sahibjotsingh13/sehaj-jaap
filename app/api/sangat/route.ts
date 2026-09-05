@@ -393,6 +393,31 @@ async function readGroup(code: string, practiceDate: string, viewerAccountId: st
   const organizerAccountId = organizer?.accountId || '';
   const canManage = organizerAccountId === viewerAccountId;
 
+  // Legacy versions of Sehaj Jaap allowed anonymous/guest Sangat members.
+  // The current product is account-based, so when the organizer opens a
+  // Sangat we permanently remove those legacy guest rows while preserving
+  // every registered account member.
+  if (canManage) {
+    await db.batch([
+      db
+        .prepare(
+          `DELETE FROM sangat_contributions
+           WHERE group_id = ?
+             AND member_id IN (
+               SELECT id
+               FROM sangat_members
+               WHERE group_id = ? AND account_id IS NULL
+             )`,
+        )
+        .bind(group.id, group.id),
+      db
+        .prepare(
+          'DELETE FROM sangat_members WHERE group_id = ? AND account_id IS NULL',
+        )
+        .bind(group.id),
+    ]);
+  }
+
   const summary = await db
     .prepare(
       `SELECT
