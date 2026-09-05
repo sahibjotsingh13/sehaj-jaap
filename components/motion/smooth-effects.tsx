@@ -56,7 +56,7 @@ export function SmoothEffects() {
       },
     );
 
-    const observeReveals = (rootNode: ParentNode = document) => {
+    const observeReveals = (rootNode: Document | HTMLElement = document) => {
       rootNode.querySelectorAll<HTMLElement>('[data-reveal]').forEach((node) => {
         if (!observed.has(node)) {
           observed.add(node);
