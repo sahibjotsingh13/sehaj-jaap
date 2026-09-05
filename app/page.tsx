@@ -179,12 +179,6 @@ const DEFAULT_SETTINGS: Settings = {
   sidebarOpen: true,
 };
 
-const GUEST_ACCOUNT: Account = {
-  id: 'guest-local',
-  username: 'guest',
-  displayName: 'Guest',
-};
-
 const STORAGE_KEY = 'sehaj-jaap-state-v1';
 const LAST_ACCOUNT_KEY = 'sehaj-jaap-last-account';
 const LOCAL_ACCOUNTS_KEY = 'sehaj-jaap-local-accounts-v1';
@@ -785,10 +779,10 @@ export default function Home() {
       const token = localStorage.getItem(SHARED_ACCOUNT_TOKEN_KEY);
       if (!token) {
         if (active) {
-          setAccount(GUEST_ACCOUNT);
+          setAccount(null);
           setMembership(null);
           setGroupQueue([]);
-          setStateOwnerId(GUEST_ACCOUNT.id);
+          setStateOwnerId(null);
           localStorage.removeItem(LAST_ACCOUNT_KEY);
           setAccountChecked(true);
         }
@@ -804,10 +798,10 @@ export default function Home() {
         if (!active) return;
         if (!response.ok || !payload.account) {
           localStorage.removeItem(SHARED_ACCOUNT_TOKEN_KEY);
-          setAccount(GUEST_ACCOUNT);
+          setAccount(null);
           setMembership(null);
           setGroupQueue([]);
-          setStateOwnerId(GUEST_ACCOUNT.id);
+          setStateOwnerId(null);
           localStorage.removeItem(LAST_ACCOUNT_KEY);
           return;
         }
@@ -833,8 +827,6 @@ export default function Home() {
         removeLocalDuplicateAccount(verifiedAccount.username);
       } catch {
         if (active) {
-          setAccount(GUEST_ACCOUNT);
-          setStateOwnerId(GUEST_ACCOUNT.id);
           const lastAccountRaw = localStorage.getItem(LAST_ACCOUNT_KEY);
           if (lastAccountRaw) {
             try {
@@ -1352,7 +1344,7 @@ export default function Home() {
     } finally {
       localStorage.removeItem(SHARED_ACCOUNT_TOKEN_KEY);
       localStorage.removeItem(LOCAL_SESSION_KEY);
-      setAccount(GUEST_ACCOUNT);
+      setAccount(null);
       setMembership(null);
       setGroupData(null);
       setGroupQueue([]);
@@ -1361,7 +1353,7 @@ export default function Home() {
       setSessionCount(0);
       setSessionStartedAt(null);
       setIncrementStack([]);
-      setStateOwnerId(GUEST_ACCOUNT.id);
+      setStateOwnerId(null);
       setAccountPassword('');
       goToView('jaap');
       localStorage.removeItem(LAST_ACCOUNT_KEY);
