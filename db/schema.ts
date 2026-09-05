@@ -98,3 +98,24 @@ export const sangatContributions = sqliteTable(
     ),
   ],
 );
+
+
+export const sangatRemovedMembers = sqliteTable(
+  'sangat_removed_members',
+  {
+    groupId: text('group_id')
+      .notNull()
+      .references(() => sangatGroups.id, { onDelete: 'cascade' }),
+    accountId: text('account_id')
+      .notNull()
+      .references(() => accounts.id, { onDelete: 'cascade' }),
+    removedAt: integer('removed_at').notNull(),
+  },
+  (table) => [
+    uniqueIndex('idx_sangat_removed_members_group_account').on(
+      table.groupId,
+      table.accountId,
+    ),
+    index('idx_sangat_removed_members_account').on(table.accountId),
+  ],
+);
