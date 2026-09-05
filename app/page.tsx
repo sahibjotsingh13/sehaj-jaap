@@ -457,6 +457,21 @@ function softCue() {
   oscillator.addEventListener('ended', () => void context.close());
 }
 
+function BrandMark({ className }: { className?: string }) {
+  return (
+    <span className={cn('brand-logo-shell', className)} aria-hidden="true">
+      <Image
+        alt=""
+        className="size-full"
+        height={48}
+        priority
+        src="/sehaj-jaap-mark.svg"
+        width={48}
+      />
+    </span>
+  );
+}
+
 function Panel({
   children,
   className,
@@ -521,7 +536,7 @@ function HeritageCard({
   title: string;
   description: string;
   credit: string;
-  sourceUrl: string;
+  sourceUrl?: string;
   className?: string;
   imageClassName?: string;
   priority?: boolean;
@@ -552,14 +567,20 @@ function HeritageCard({
         <p className="mt-2 max-w-md text-sm leading-6 text-white/72">
           {description}
         </p>
-        <a
-          className="heritage-credit mt-4 w-fit text-[11px] text-white/62 underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-          href={sourceUrl}
-          rel="noreferrer"
-          target="_blank"
-        >
-          {credit}
-        </a>
+        {sourceUrl ? (
+          <a
+            className="heritage-credit mt-4 w-fit text-[11px] text-white/62 underline decoration-white/30 underline-offset-4 hover:text-white focus-visible:rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+            href={sourceUrl}
+            rel="noreferrer"
+            target="_blank"
+          >
+            {credit}
+          </a>
+        ) : (
+          <span className="heritage-credit mt-4 w-fit text-[11px] text-white/62">
+            {credit}
+          </span>
+        )}
       </div>
     </article>
   );
@@ -634,6 +655,27 @@ export default function Home() {
     (english: string, punjabi: string) => (locale === 'pa' ? punjabi : english),
     [locale],
   );
+
+  function goToView(next: View) {
+    const update = () => {
+      setActiveView(next);
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    };
+
+    if (typeof document !== 'undefined') {
+      const transitionDocument = document as Document & {
+        startViewTransition?: (callback: () => void) => unknown;
+      };
+      if (transitionDocument.startViewTransition) {
+        transitionDocument.startViewTransition(update);
+        return;
+      }
+    }
+
+    update();
+  }
 
   const todayRecord = records[today] ?? {
     jaap: 0,
@@ -756,7 +798,7 @@ export default function Home() {
         .slice(0, 12);
       if (invite) {
         setInviteInput(invite);
-        setActiveView('sangat');
+        goToView('sangat');
         setGroupMode('join');
       }
       setHydrated(true);
@@ -1172,7 +1214,7 @@ export default function Home() {
     });
     if (showSummary) {
       setSummary({ ...saved, todayTotal: todayCount });
-      setActiveView('summary');
+      goToView('summary');
     } else {
       setNotice(tr('Session saved', 'ਸੈਸ਼ਨ ਸੰਭਾਲਿਆ ਗਿਆ'));
     }
@@ -1229,7 +1271,7 @@ export default function Home() {
       true,
     );
     if (!completed) {
-      setActiveView('focus');
+      goToView('focus');
     }
     setActiveFocus(false);
     setFocusRunStartedAt(null);
@@ -1354,7 +1396,7 @@ export default function Home() {
       setOnboarded(true);
 
       if (inviteInput.length === 12) {
-        setActiveView('sangat');
+        goToView('sangat');
         setGroupMode('join');
       }
 
@@ -1393,7 +1435,7 @@ export default function Home() {
       setIncrementStack([]);
       setStateOwnerId(null);
       setAccountPassword('');
-      setActiveView('jaap');
+      goToView('jaap');
       localStorage.removeItem(LAST_ACCOUNT_KEY);
     }
   }
@@ -1670,17 +1712,17 @@ export default function Home() {
         <div className="auth-card auth-3d-stage mx-auto grid w-full max-w-[1200px] overflow-hidden rounded-[38px] lg:min-h-[720px] lg:grid-cols-[1.08fr_.92fr]">
           <section className="auth-visual auth-visual-depth relative isolate min-h-[270px] overflow-hidden bg-primary text-white sm:min-h-[360px] lg:min-h-full">
             <Image
-              alt="Sri Harmandir Sahib reflected in the sarovar"
+              alt="Illuminated gurdwara complex at night"
               className="object-cover"
               fill
               priority
               sizes="(max-width: 1024px) 100vw, 55vw"
-              src="/golden-temple.jpg"
+              src="/heritage-user-01.webp"
             />
             <div className="auth-visual-overlay absolute inset-0" />
             <div className="relative z-10 flex min-h-[inherit] flex-col p-6 sm:p-9 lg:min-h-full lg:p-12">
               <div className="flex items-center gap-3">
-                <span className="grid size-11 place-items-center rounded-[14px] border border-white/25 bg-white/10 text-xl backdrop-blur-sm" aria-hidden="true">🪯</span>
+                <BrandMark className="size-11 shrink-0" />
                 <div>
                   <p className="font-heading text-xl font-semibold">Sehaj Jaap</p>
                   <p className="font-gurmukhi text-sm text-white/65">ਸਹਿਜ ਜਾਪ</p>
@@ -1973,14 +2015,12 @@ export default function Home() {
       <button
         className="flex items-center gap-3 rounded-2xl px-2 pr-10 text-left"
         onClick={() => {
-          setActiveView('jaap');
+          goToView('jaap');
           if (mobile) setMobileMenuOpen(false);
         }}
         type="button"
       >
-        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary text-2xl text-primary-foreground shadow-[0_8px_24px_rgba(23,50,77,.18)]">
-          🪯
-        </span>
+        <BrandMark className="size-11 shrink-0" />
         <span>
           <span className="block font-heading text-[1.12rem] font-semibold tracking-[-.02em]">
             Sehaj Jaap
@@ -2005,7 +2045,7 @@ export default function Home() {
                 : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
             )}
             onClick={() => {
-              setActiveView(id);
+              goToView(id);
               if (mobile) setMobileMenuOpen(false);
             }}
             type="button"
@@ -2097,10 +2137,10 @@ export default function Home() {
           <div className="hidden min-w-0 items-center gap-8 xl:flex">
             <button
               className="brand-wordmark flex items-center gap-3 text-left"
-              onClick={() => setActiveView('jaap')}
+              onClick={() => goToView('jaap')}
               type="button"
             >
-              <span className="brand-mark" aria-hidden="true">🪯</span>
+              <BrandMark className="size-[38px] shrink-0" />
               <span>
                 <span className="block font-heading text-[1.05rem] font-semibold tracking-[-.02em]">
                   Sehaj Jaap
@@ -2121,7 +2161,7 @@ export default function Home() {
                   }
                   className="desktop-nav-link"
                   onClick={() => {
-                    setActiveView(id);
+                    goToView(id);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
                   type="button"
@@ -2191,7 +2231,7 @@ export default function Home() {
             <button
               aria-label={tr('Profile and settings', 'ਪ੍ਰੋਫ਼ਾਈਲ ਅਤੇ ਸੈਟਿੰਗਾਂ')}
               className="grid size-10 place-items-center rounded-full border border-[color:var(--line)] bg-card text-muted-foreground"
-              onClick={() => setActiveView('more')}
+              onClick={() => goToView('more')}
               type="button"
             >
               <CircleUserRound aria-hidden="true" className="size-5" strokeWidth={1.7} />
@@ -2202,6 +2242,28 @@ export default function Home() {
         {activeView === 'jaap' && (
           <div className="view-stage scroll-story mx-auto w-full max-w-[1180px] px-4 pb-28 pt-2 sm:px-8 lg:px-12 lg:pt-5 xl:pb-16">
             <Panel className="counter-panel counter-3d-stage relative isolate flex min-h-[calc(100dvh-108px)] flex-col items-center overflow-hidden px-5 pb-7 pt-8 sm:min-h-[690px] sm:px-9 sm:pt-10 lg:min-h-[730px]">
+              <div aria-hidden="true" className="counter-cinematic-media">
+                <Image
+                  alt=""
+                  className="counter-cinematic-photo object-cover"
+                  fill
+                  priority
+                  sizes="(max-width: 1180px) 100vw, 1180px"
+                  src="/heritage-user-01.webp"
+                />
+                <video
+                  autoPlay
+                  className="counter-cinematic-video"
+                  loop
+                  muted
+                  playsInline
+                  poster="/heritage-user-01.webp"
+                  preload="metadata"
+                >
+                  <source src="/heritage-motion-01.webm" type="video/webm" />
+                </video>
+                <span className="counter-cinematic-wash" />
+              </div>
               <div aria-hidden="true" className="halo" />
               <div className="relative z-10 text-center">
                 <p className="eyebrow">{tr('Today', 'ਅੱਜ')}</p>
@@ -2319,8 +2381,16 @@ export default function Home() {
             </Panel>
 
             <aside className="floating-rail story-rail grid content-start gap-5 lg:grid-cols-3">
-              <Panel className="goal-orbit-panel p-6">
-                <div className="flex items-center justify-between gap-4">
+              <Panel className="goal-orbit-panel story-media-card p-6">
+                <Image
+                  alt=""
+                  className="story-card-media object-cover"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 33vw"
+                  src="/heritage-user-02.webp"
+                />
+                <span aria-hidden="true" className="story-card-scrim" />
+                <div className="relative z-10 flex items-center justify-between gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">
                       {tr('Goal', 'ਟੀਚਾ')}
@@ -2341,38 +2411,54 @@ export default function Home() {
 
               <button
                 aria-label={tr('Open focus setup', 'ਧਿਆਨ ਸੈਟਅੱਪ ਖੋਲ੍ਹੋ')}
-                className="depth-action depth-action-primary group flex min-h-24 items-center justify-between px-6 text-left text-primary-foreground"
-                onClick={() => setActiveView('focus')}
+                className="depth-action depth-action-primary story-media-card group flex min-h-24 items-center justify-between px-6 text-left text-primary-foreground"
+                onClick={() => goToView('focus')}
                 type="button"
               >
-                <span>
+                <Image
+                  alt=""
+                  className="story-card-media object-cover"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 33vw"
+                  src="/heritage-user-03.webp"
+                />
+                <span aria-hidden="true" className="story-card-scrim story-card-scrim-dark" />
+                <span className="relative z-10">
                   <span className="block text-lg font-semibold">{tr('Focus', 'ਧਿਆਨ')}</span>
                   <span className="mt-1 block text-xs text-white/60">
                     {tr('Begin a session', 'ਸੈਸ਼ਨ ਸ਼ੁਰੂ ਕਰੋ')}
                   </span>
                 </span>
-                <span className="grid size-11 place-items-center rounded-full bg-white/10 transition group-hover:bg-white/15">
+                <span className="relative z-10 grid size-11 place-items-center rounded-full bg-white/10 transition group-hover:bg-white/15">
                   <Focus aria-hidden="true" className="size-5" />
                 </span>
               </button>
 
               <button
-                className="practice-link-card depth-action group flex min-h-32 w-full items-center gap-4 p-5 text-left"
-                onClick={() => setActiveView('sangat')}
+                className="practice-link-card depth-action story-media-card group flex min-h-32 w-full items-center gap-4 p-5 text-left"
+                onClick={() => goToView('sangat')}
                 type="button"
               >
-                <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[color:var(--mist)] text-primary">
+                <Image
+                  alt=""
+                  className="story-card-media object-cover"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 33vw"
+                  src="/heritage-user-01.webp"
+                />
+                <span aria-hidden="true" className="story-card-scrim" />
+                <span className="relative z-10 grid size-12 shrink-0 place-items-center rounded-2xl bg-white/70 text-primary backdrop-blur-md">
                   <UsersRound aria-hidden="true" className="size-5" />
                 </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate font-semibold">
+                <span className="relative z-10 min-w-0 flex-1">
+                  <span className="block truncate font-semibold text-white">
                     {membership ? membership.groupName : tr('Sangat', 'ਸੰਗਤ')}
                   </span>
-                  <span className="mt-1 block text-sm text-muted-foreground">
+                  <span className="mt-1 block text-sm text-white/72">
                     {tr('Practice together online', 'ਆਨਲਾਈਨ ਮਿਲ ਕੇ ਅਭਿਆਸ ਕਰੋ')}
                   </span>
                 </span>
-                <ChevronRight aria-hidden="true" className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+                <ChevronRight aria-hidden="true" className="relative z-10 size-4 text-white/75 transition-transform group-hover:translate-x-0.5" />
               </button>
             </aside>
           </div>
@@ -3180,7 +3266,7 @@ export default function Home() {
                   <p className="mt-2 text-sm text-muted-foreground">{membership.memberName}</p>
                   <button
                     className="outline-action mt-5 w-full"
-                    onClick={() => setActiveView('sangat')}
+                    onClick={() => goToView('sangat')}
                     type="button"
                   >
                     <UsersRound aria-hidden="true" />
@@ -3190,113 +3276,107 @@ export default function Home() {
               )}
             </div>
 
-            <section className="heritage-gallery lg:col-span-2">
-              <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-                <h2 className="page-heading">{tr('Sikh heritage', 'ਸਿੱਖ ਵਿਰਾਸਤ')}</h2>
-                <p className="max-w-sm text-sm leading-6 text-muted-foreground">
+            <section className="heritage-gallery">
+              <div className="heritage-intro">
+                <div>
+                  <p className="eyebrow">{tr('Sacred moments', 'ਪਵਿੱਤਰ ਪਲ')}</p>
+                  <h2 className="page-heading">{tr('Heritage in living light', 'ਜੀਵੰਤ ਰੌਸ਼ਨੀ ਵਿੱਚ ਵਿਰਾਸਤ')}</h2>
+                </div>
+                <p className="max-w-md text-sm leading-6 text-muted-foreground">
                   {tr(
-                    'Historic Takhts, Gurdwaras and puratan art.',
-                    'ਇਤਿਹਾਸਕ ਤਖ਼ਤ, ਗੁਰਦੁਆਰਾ ਸਾਹਿਬਾਨ ਅਤੇ ਪੁਰਾਤਨ ਕਲਾ।',
+                    'A quiet visual journey through architecture, light and Sangat. The photographs you supplied are presented with their original watermark intact.',
+                    'ਇਮਾਰਤ, ਰੌਸ਼ਨੀ ਅਤੇ ਸੰਗਤ ਰਾਹੀਂ ਇੱਕ ਸ਼ਾਂਤ ਦ੍ਰਿਸ਼ ਯਾਤਰਾ। ਤੁਹਾਡੇ ਦਿੱਤੇ ਫੋਟੋ ਆਪਣੇ ਮੂਲ ਵਾਟਰਮਾਰਕ ਨਾਲ ਪੇਸ਼ ਕੀਤੇ ਗਏ ਹਨ।',
                   )}
                 </p>
               </div>
 
-              <div className="heritage-scroll-sequence">
+              <div className="heritage-motion-feature">
+                <video
+                  autoPlay
+                  className="heritage-motion-video"
+                  loop
+                  muted
+                  playsInline
+                  poster="/heritage-user-03.webp"
+                  preload="metadata"
+                >
+                  <source src="/heritage-motion-01.webm" type="video/webm" />
+                </video>
+                <div aria-hidden="true" className="heritage-motion-overlay" />
+                <div className="heritage-motion-copy">
+                  <p className="eyebrow text-white/70">{tr('Night darshan', 'ਰਾਤ ਦਾ ਦਰਸ਼ਨ')}</p>
+                  <h3>{tr('Stillness, light, and Sangat.', 'ਸ਼ਾਂਤੀ, ਰੌਸ਼ਨੀ ਅਤੇ ਸੰਗਤ।')}</h3>
+                  <p>
+                    {tr(
+                      'A short atmospheric loop from the media you shared, used as part of the interface rather than as decorative clutter.',
+                      'ਤੁਹਾਡੇ ਸਾਂਝੇ ਕੀਤੇ ਮੀਡੀਆ ਦੀ ਇੱਕ ਛੋਟੀ ਝਲਕ, ਸਿਰਫ਼ ਸਜਾਵਟ ਨਹੀਂ ਸਗੋਂ ਇੰਟਰਫੇਸ ਦਾ ਹਿੱਸਾ।',
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <div className="heritage-photo-triptych">
                 <HeritageCard
-                  alt="Sri Harmandir Sahib reflected in the sarovar at Amritsar"
-                  className="lg:col-span-7 lg:min-h-[360px]"
-                  credit="Jasdeep Singh / Wikimedia Commons, CC0"
+                  alt="Illuminated gurdwara façade at night"
+                  credit="Supplied photo · AZAAD MEDIA watermark retained"
                   description={tr(
-                    'Darbar Sahib, Amritsar — a place of seva, kirtan, and welcome.',
-                    'ਦਰਬਾਰ ਸਾਹਿਬ, ਅੰਮ੍ਰਿਤਸਰ — ਸੇਵਾ, ਕੀਰਤਨ ਅਤੇ ਸਾਂਝੀਵਾਲਤਾ ਦਾ ਅਸਥਾਨ।',
+                    'The illuminated façade framed against the night sky.',
+                    'ਰਾਤ ਦੇ ਆਕਾਸ਼ ਵਿੱਚ ਰੌਸ਼ਨ ਇਮਾਰਤ ਦੀ ਝਲਕ।',
                   )}
-                  eyebrow={tr('Amritsar', 'ਅੰਮ੍ਰਿਤਸਰ')}
+                  eyebrow={tr('Night light', 'ਰਾਤ ਦੀ ਰੌਸ਼ਨੀ')}
                   priority
-                  sourceUrl="https://commons.wikimedia.org/wiki/File:Golden_Temple_.jpg"
-                  src="/golden-temple.jpg"
-                  title={tr('Sri Harmandir Sahib', 'ਸ੍ਰੀ ਹਰਿਮੰਦਰ ਸਾਹਿਬ')}
+                  src="/heritage-user-01.webp"
+                  title={tr('A luminous presence', 'ਰੌਸ਼ਨ ਹਾਜ਼ਰੀ')}
                 />
                 <HeritageCard
-                  alt="Takht Sri Hazur Sahib complex in Nanded"
-                  className="lg:col-span-5 lg:min-h-[360px]"
-                  credit="PriyanshuD6 / Wikimedia Commons, CC BY-SA 4.0 · cropped"
+                  alt="Close view of the illuminated dome and architecture"
+                  credit="Supplied photo · AZAAD MEDIA watermark retained"
                   description={tr(
-                    'Takht Sachkhand Sri Hazur Abchal Nagar Sahib in Nanded.',
-                    'ਨੰਦੇੜ ਵਿਖੇ ਤਖ਼ਤ ਸੱਚਖੰਡ ਸ੍ਰੀ ਹਜ਼ੂਰ ਅਬਚਲ ਨਗਰ ਸਾਹਿਬ।',
+                    'A closer study of the dome, marble detail and illuminated forms.',
+                    'ਗੁੰਬਦ, ਸੰਗਮਰਮਰ ਅਤੇ ਰੌਸ਼ਨ ਨਕਸ਼ਕਾਰੀ ਦੀ ਨੇੜਲੀ ਝਲਕ।',
                   )}
-                  eyebrow={tr('Nanded', 'ਨੰਦੇੜ')}
-                  sourceUrl="https://commons.wikimedia.org/wiki/File:Sri_Hazur_Sahib,_Nanded.jpg"
-                  src="/hazur-sahib.jpg"
-                  title={tr('Takht Sri Hazur Sahib', 'ਤਖ਼ਤ ਸ੍ਰੀ ਹਜ਼ੂਰ ਸਾਹਿਬ')}
+                  eyebrow={tr('Sacred detail', 'ਪਵਿੱਤਰ ਵਿਸਥਾਰ')}
+                  src="/heritage-user-02.webp"
+                  title={tr('Architecture in light', 'ਰੌਸ਼ਨੀ ਵਿੱਚ ਵਾਸਤੁਕਲਾ')}
                 />
                 <HeritageCard
-                  alt="Sri Hemkund Sahib beside the mountain lake"
-                  className="lg:col-span-5"
-                  credit="Sai Kiran / Wikimedia Commons, CC BY-SA 4.0 · cropped"
+                  alt="Gurdwara viewed from the courtyard beneath tall Nishan Sahib poles"
+                  credit="Supplied photo · AZAAD MEDIA watermark retained"
                   description={tr(
-                    'A high-altitude place of remembrance amid still water and mountains.',
-                    'ਸ਼ਾਂਤ ਸਰੋਵਰ ਅਤੇ ਪਹਾੜਾਂ ਵਿਚਕਾਰ ਉੱਚਾਈ ਉੱਤੇ ਸਿਮਰਨ ਦਾ ਅਸਥਾਨ।',
+                    'A wider courtyard perspective with the Sangat moving through the space.',
+                    'ਵਿਸ਼ਾਲ ਪਰਿਸਰ ਵਿੱਚ ਸੰਗਤ ਦੀ ਚਲਹਲ-ਪਹਿਲ ਵਾਲਾ ਦ੍ਰਿਸ਼।',
                   )}
-                  eyebrow={tr('Uttarakhand', 'ਉੱਤਰਾਖੰਡ')}
-                  sourceUrl="https://commons.wikimedia.org/wiki/File:Hemkund_sahib.jpg"
-                  src="/hemkund-sahib.jpg"
-                  title={tr('Sri Hemkund Sahib', 'ਸ੍ਰੀ ਹੇਮਕੁੰਟ ਸਾਹਿਬ')}
-                />
-                <HeritageCard
-                  alt="Takht Sri Kesgarh Sahib at Anandpur Sahib"
-                  className="lg:col-span-7"
-                  credit="Historiansimar / Wikimedia Commons, CC BY-SA 4.0 · cropped"
-                  description={tr(
-                    'The historic Takht at Anandpur Sahib, central to the Khalsa story.',
-                    'ਅਨੰਦਪੁਰ ਸਾਹਿਬ ਦਾ ਇਤਿਹਾਸਕ ਤਖ਼ਤ, ਖ਼ਾਲਸਾ ਇਤਿਹਾਸ ਦਾ ਕੇਂਦਰੀ ਅਸਥਾਨ।',
-                  )}
-                  eyebrow={tr('Anandpur Sahib', 'ਅਨੰਦਪੁਰ ਸਾਹਿਬ')}
-                  sourceUrl="https://commons.wikimedia.org/wiki/File:Takhat_Shri_Kesgarh_Sahib.jpg"
-                  src="/kesgarh-sahib.jpg"
-                  title={tr('Takht Sri Kesgarh Sahib', 'ਤਖ਼ਤ ਸ੍ਰੀ ਕੇਸਗੜ੍ਹ ਸਾਹਿਬ')}
-                />
-                <HeritageCard
-                  alt="Gurdwara Bangla Sahib and sarovar in Delhi"
-                  className="lg:col-span-4"
-                  credit="Vrlobo888 / Wikimedia Commons, public domain"
-                  description={tr(
-                    'A luminous Delhi Gurdwara known for seva and healing remembrance.',
-                    'ਦਿੱਲੀ ਦਾ ਪ੍ਰਕਾਸ਼ਮਾਨ ਗੁਰਦੁਆਰਾ, ਸੇਵਾ ਅਤੇ ਯਾਦ ਨਾਲ ਜੁੜਿਆ ਅਸਥਾਨ।',
-                  )}
-                  eyebrow={tr('Delhi', 'ਦਿੱਲੀ')}
-                  sourceUrl="https://commons.wikimedia.org/wiki/File:Gurdwara_Bangla_Sahib.jpg"
-                  src="/bangla-sahib.jpg"
-                  title={tr('Gurdwara Bangla Sahib', 'ਗੁਰਦੁਆਰਾ ਬੰਗਲਾ ਸਾਹਿਬ')}
-                />
-                <HeritageCard
-                  alt="A 1726 hukamnama of Mata Sahib Devan Ji"
-                  className="lg:col-span-4"
-                  credit="1726 hukamnama / Wikimedia Commons, public domain"
-                  description={tr(
-                    'An original 1726 hukamnama connected with Mata Sahib Devan Ji, preserved as history.',
-                    'ਮਾਤਾ ਸਾਹਿਬ ਦੇਵਾਂ ਜੀ ਨਾਲ ਸੰਬੰਧਿਤ 1726 ਦਾ ਅਸਲ ਹੁਕਮਨਾਮਾ, ਇਤਿਹਾਸ ਵਜੋਂ ਸੰਭਾਲਿਆ।',
-                  )}
-                  eyebrow={tr('Mata Sahib Devan Ji', 'ਮਾਤਾ ਸਾਹਿਬ ਦੇਵਾਂ ਜੀ')}
-                  imageClassName="object-top"
-                  sourceUrl="https://commons.wikimedia.org/wiki/File:Hukamnama_(edict)_of_Mata_Sahib_Devan_(Mata_Sahib_Kaur)_dated_to_10_September_1726_addressed_to_Bhai_Alam_Singh.jpg"
-                  src="/mata-sahib-deva-hukamnama.jpg"
-                  title={tr('A living written legacy', 'ਲਿਖਤੀ ਵਿਰਾਸਤ ਦੀ ਝਲਕ')}
-                />
-                <HeritageCard
-                  alt="Late nineteenth-century puratan painting of the Sikh Gurus with Bhai Bala and Bhai Mardana"
-                  className="lg:col-span-4"
-                  credit="Unknown artist / Wikimedia Commons, public domain"
-                  description={tr(
-                    'A late nineteenth-century puratan work, presented respectfully and without alteration.',
-                    'ਉੱਨੀਵੀਂ ਸਦੀ ਦੇ ਅਖੀਰ ਦੀ ਪੁਰਾਤਨ ਕਲਾ, ਸਤਿਕਾਰ ਨਾਲ ਬਿਨਾਂ ਤਬਦੀਲੀ ਪੇਸ਼ ਕੀਤੀ।',
-                  )}
-                  eyebrow={tr('Puratan art', 'ਪੁਰਾਤਨ ਕਲਾ')}
-                  imageClassName="object-top"
-                  sourceUrl="https://commons.wikimedia.org/wiki/File:Sikh_Gurus_with_Bhai_Bala_and_Bhai_Mardana.jpg"
-                  src="/ten-gurus-puratan.jpg"
-                  title={tr('Sikh Gurus in sangat', 'ਸੰਗਤ ਵਿੱਚ ਗੁਰੂ ਸਾਹਿਬਾਨ')}
+                  eyebrow={tr('Sangat', 'ਸੰਗਤ')}
+                  src="/heritage-user-03.webp"
+                  title={tr('A living gathering', 'ਜੀਵੰਤ ਸੰਗਤ')}
                 />
               </div>
+
+              <div className="heritage-motion-note">
+                <div className="heritage-motion-note-copy">
+                  <p className="eyebrow">{tr('Heritage in motion', 'ਚਲਦੀ ਵਿਰਾਸਤ')}</p>
+                  <h3>{tr('A slower, more human interface.', 'ਹੌਲਾ, ਹੋਰ ਮਨੁੱਖੀ ਇੰਟਰਫੇਸ।')}</h3>
+                  <p>
+                    {tr(
+                      'Motion is kept deliberate: media appears as you scroll, hover reveals detail, and the navigation transitions without abrupt page changes.',
+                      'ਮੋਸ਼ਨ ਨੂੰ ਸੋਚ-ਸਮਝ ਕੇ ਰੱਖਿਆ ਗਿਆ ਹੈ: ਸਕ੍ਰੋਲ ਨਾਲ ਮੀਡੀਆ ਉਭਰਦਾ ਹੈ, ਹੋਵਰ ਨਾਲ ਵਿਸਥਾਰ ਦਿਖਦਾ ਹੈ ਅਤੇ ਨੇਵੀਗੇਸ਼ਨ ਨਰਮੀ ਨਾਲ ਬਦਲਦੀ ਹੈ।',
+                    )}
+                  </p>
+                </div>
+                <div className="heritage-motion-note-media">
+                  <video
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    poster="/heritage-user-02.webp"
+                    preload="metadata"
+                  >
+                    <source src="/heritage-motion-02.webm" type="video/webm" />
+                  </video>
+                </div>
+              </div>
+            </section>
             </section>
           </div>
         )}
@@ -3351,11 +3431,11 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="mt-8 grid gap-3 sm:grid-cols-2">
-                  <button className="primary-action" onClick={() => setActiveView('jaap')} type="button">
+                  <button className="primary-action" onClick={() => goToView('jaap')} type="button">
                     <MousePointerClick aria-hidden="true" />
                     {tr('Continue', 'ਜਾਰੀ ਰੱਖੋ')}
                   </button>
-                  <button className="outline-action" onClick={() => setActiveView('focus')} type="button">
+                  <button className="outline-action" onClick={() => goToView('focus')} type="button">
                     <Focus aria-hidden="true" />
                     {tr('Another session', 'ਇੱਕ ਹੋਰ ਸੈਸ਼ਨ')}
                   </button>
@@ -3384,7 +3464,7 @@ export default function Home() {
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground',
             )}
-            onClick={() => setActiveView(id)}
+            onClick={() => goToView(id)}
             type="button"
           >
             <Icon aria-hidden="true" className="size-[19px]" strokeWidth={1.8} />
