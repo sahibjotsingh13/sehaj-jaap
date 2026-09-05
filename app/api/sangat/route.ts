@@ -146,6 +146,64 @@ function json(data: unknown, status = 200, extraHeaders?: HeadersInit) {
   });
 }
 
+function sanitizeLegacyGuests(payload: unknown) {
+  if (!payload || typeof payload !== 'object') return payload;
+
+  const root = payload as {
+    group?: {
+      members?: Array<{
+        name?: unknown;
+        count?: unknown;
+        practiced?: unknown;
+      }>;
+      memberCount?: unknown;
+      activeMembers?: unknown;
+      total?: unknown;
+    };
+  };
+
+  const group = root.group;
+  if (!group || !Array.isArray(group.members)) return payload;
+
+  const guestPattern = /^guest(?:[\s#_-]*\d*)?$/i;
+  const guests = group.members.filter(
+    (member) =>
+      typeof member?.name === 'string' &&
+      guestPattern.test(member.name.trim()),
+  );
+  if (!guests.length) return payload;
+
+  const members = group.members.filter(
+    (member) =>
+      !(
+        typeof member?.name === 'string' &&
+        guestPattern.test(member.name.trim())
+      ),
+  );
+
+  const guestActive = guests.filter((member) => Boolean(member.practiced)).length;
+  const knownGuestTotal = guests.reduce((sum, member) => {
+    const value =
+      typeof member.count === 'number'
+        ? member.count
+        : Number(member.count);
+    return Number.isFinite(value) && value > 0 ? sum + value : sum;
+  }, 0);
+
+  group.members = members;
+  group.memberCount = members.length;
+
+  if (typeof group.activeMembers === 'number') {
+    group.activeMembers = Math.max(0, group.activeMembers - guestActive);
+  }
+
+  if (typeof group.total === 'number' && knownGuestTotal > 0) {
+    group.total = Math.max(0, group.total - knownGuestTotal);
+  }
+
+  return payload;
+}
+
 async function proxySangat(request: Request) {
   const upstreamOrigin = process.env.SANGAT_UPSTREAM_ORIGIN?.trim();
   const upstreamToken = process.env.SANGAT_UPSTREAM_TOKEN?.trim();
@@ -201,7 +259,23 @@ async function proxySangat(request: Request) {
     });
     const setCookie = response.headers.get('set-cookie');
     if (setCookie) responseHeaders.set('Set-Cookie', setCookie);
-    return new Response(await response.text(), {
+
+    const responseText = await response.text();
+    const responseType = response.headers.get('content-type') || '';
+    if (responseType.includes('application/json')) {
+      try {
+        const parsed = JSON.parse(responseText);
+        const sanitized = sanitizeLegacyGuests(parsed);
+        return new Response(JSON.stringify(sanitized), {
+          status: response.status,
+          headers: responseHeaders,
+        });
+      } catch {
+        // Preserve the upstream response if it was not valid JSON.
+      }
+    }
+
+    return new Response(responseText, {
       status: response.status,
       headers: responseHeaders,
     });
