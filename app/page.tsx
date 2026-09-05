@@ -2145,7 +2145,7 @@ export default function Home() {
 
         {activeView === 'jaap' && (
           <div className="view-stage scroll-story mx-auto w-full max-w-[1180px] px-4 pb-28 pt-2 sm:px-8 lg:px-12 lg:pt-5 xl:pb-16">
-            <Panel className="counter-panel counter-3d-stage relative isolate flex min-h-[calc(100dvh-108px)] flex-col items-center overflow-hidden px-5 pb-7 pt-8 sm:min-h-[690px] sm:px-9 sm:pt-10 lg:min-h-[730px]">
+            <Panel data-reveal className="counter-panel counter-3d-stage relative isolate flex min-h-[calc(100dvh-108px)] flex-col items-center overflow-hidden px-5 pb-7 pt-8 sm:min-h-[690px] sm:px-9 sm:pt-10 lg:min-h-[730px]">
               <div aria-hidden="true" className="counter-cinematic-media">
                 <Image
                   alt=""
@@ -2275,7 +2275,7 @@ export default function Home() {
               </div>
             </Panel>
 
-            <aside className="floating-rail story-rail grid content-start gap-5 lg:grid-cols-3">
+            <aside data-reveal className="floating-rail story-rail grid content-start gap-5 lg:grid-cols-3">
               <Panel className="goal-orbit-panel story-media-card p-6">
                 <Image
                   alt=""
@@ -2363,7 +2363,7 @@ export default function Home() {
               </button>
             </aside>
 
-            <section className="home-scroll-journey">
+            <section className="home-scroll-journey" data-reveal>
               <div className="home-scroll-copy">
                 <p className="eyebrow">{tr('Your practice, over time', 'ਸਮੇਂ ਨਾਲ ਤੁਹਾਡਾ ਅਭਿਆਸ')}</p>
                 <h2>
@@ -2380,7 +2380,7 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="home-journey-metrics" aria-label={tr('Practice overview', 'ਅਭਿਆਸ ਦੀ ਝਲਕ')}>
+              <div className="home-journey-metrics" data-reveal aria-label={tr('Practice overview', 'ਅਭਿਆਸ ਦੀ ਝਲਕ')}>
                 <div>
                   <strong>{formatNumber(weekTotal)}</strong>
                   <span>{tr('This week', 'ਇਸ ਹਫ਼ਤੇ')}</span>
@@ -2397,6 +2397,7 @@ export default function Home() {
 
               <button
                 className="home-film-link"
+                data-reveal
                 onClick={() => goToView('heritage')}
                 type="button"
               >
@@ -2417,7 +2418,7 @@ export default function Home() {
                 </span>
               </button>
 
-              <div className="home-journey-actions">
+              <div className="home-journey-actions" data-reveal>
                 <button onClick={() => goToView('progress')} type="button">
                   <span>{tr('See your journey', 'ਆਪਣੀ ਯਾਤਰਾ ਵੇਖੋ')}</span>
                   <ChevronRight aria-hidden="true" />
@@ -2433,7 +2434,7 @@ export default function Home() {
 
         {activeView === 'focus' && (
           <div className="view-stage focus-setup-story mx-auto w-full max-w-[1120px] px-4 pb-28 pt-3 sm:px-8 lg:px-12 xl:pb-16">
-            <section className="focus-setup-hero">
+            <section className="focus-setup-hero" data-reveal>
               <div className="focus-setup-hero-media" aria-hidden="true">
                 <Image
                   alt=""
@@ -2458,7 +2459,7 @@ export default function Home() {
                 </p>
               </div>
             </section>
-            <Panel className="focus-setup-panel p-6 sm:p-8 lg:p-10">
+            <Panel data-reveal className="focus-setup-panel p-6 sm:p-8 lg:p-10">
               <div className="mb-8">
                 <p className="max-w-xl text-[15px] leading-6 text-muted-foreground">
                   {tr(
@@ -2640,7 +2641,7 @@ export default function Home() {
 
         {activeView === 'sangat' && (
           <div className="view-stage sangat-experience mx-auto w-full max-w-[1180px] px-4 pb-28 pt-3 sm:px-8 lg:px-12 xl:pb-16">
-            <section className="sangat-hero-scroll">
+            <section className="sangat-hero-scroll" data-reveal>
               <Image
                 alt=""
                 className="sangat-hero-image object-cover"
@@ -2940,7 +2941,7 @@ export default function Home() {
 
         {activeView === 'progress' && (
           <div className="view-stage progress-story mx-auto w-full max-w-[1180px] px-4 pb-28 pt-3 sm:px-8 lg:px-12 xl:pb-16">
-            <section className="progress-story-hero">
+            <section className="progress-story-hero" data-reveal>
               <div>
                 <p className="eyebrow">{tr('Your journey', 'ਤੁਹਾਡੀ ਯਾਤਰਾ')}</p>
                 <h1>{tr('Consistency, made visible.', 'ਨਿਰੰਤਰਤਾ, ਹੁਣ ਦਿੱਖ ਵਿੱਚ।')}</h1>
@@ -2957,7 +2958,7 @@ export default function Home() {
               </div>
             </section>
 
-            <div className="progress-week-timeline">
+            <div className="progress-week-timeline" data-reveal>
               {recentDays.map((day) => (
                 <button
                   key={day.key}
@@ -2976,7 +2977,7 @@ export default function Home() {
               ))}
             </div>
 
-            <div className="metric-ribbon grid gap-0 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="metric-ribbon grid gap-0 sm:grid-cols-2 lg:grid-cols-4" data-reveal>
               {[
                 { label: tr('This week', 'ਇਸ ਹਫ਼ਤੇ'), value: formatNumber(weekTotal), icon: MousePointerClick },
                 { label: tr('Malas', 'ਮਾਲਾ'), value: formatNumber(Math.floor(weekTotal / settings.malaSize)), icon: Target },
@@ -3336,7 +3337,7 @@ export default function Home() {
 
         {activeView === 'summary' && summary && (
           <div className="view-stage summary-experience mx-auto w-full max-w-[980px] px-4 pb-28 pt-8 sm:px-8 xl:pb-16">
-            <Panel className="summary-cinematic overflow-hidden text-center">
+            <Panel data-reveal className="summary-cinematic overflow-hidden text-center">
               <div className="summary-cinematic-media" aria-hidden="true">
                 <Image
                   alt=""
