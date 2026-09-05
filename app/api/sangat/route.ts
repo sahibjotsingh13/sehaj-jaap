@@ -67,6 +67,19 @@ async function ensureAuthSchema() {
         db.prepare(
           'CREATE INDEX IF NOT EXISTS idx_auth_sessions_expires_at ON auth_sessions (expires_at)',
         ),
+        db.prepare(
+          `CREATE TABLE IF NOT EXISTS sangat_removed_members (
+             group_id text NOT NULL,
+             account_id text NOT NULL,
+             removed_at integer NOT NULL,
+             PRIMARY KEY (group_id, account_id),
+             FOREIGN KEY (group_id) REFERENCES sangat_groups(id) ON DELETE CASCADE,
+             FOREIGN KEY (account_id) REFERENCES accounts(id) ON DELETE CASCADE
+           )`,
+        ),
+        db.prepare(
+          'CREATE INDEX IF NOT EXISTS idx_sangat_removed_members_account ON sangat_removed_members (account_id)',
+        ),
       ]);
 
       const accountColumns = await db
@@ -354,7 +367,7 @@ function validDate(value: unknown): value is string {
   return distance < 1000 * 60 * 60 * 24 * 3;
 }
 
-async function readGroup(code: string, practiceDate: string) {
+async function readGroup(code: string, practiceDate: string, viewerAccountId: string) {
   const db = getDb();
   const group = await db
     .prepare(
@@ -366,6 +379,19 @@ async function readGroup(code: string, practiceDate: string) {
     .first<{ id: string; name: string; dailyGoal: number; createdAt: number }>();
 
   if (!group) return null;
+
+  const organizer = await db
+    .prepare(
+      `SELECT account_id AS accountId
+       FROM sangat_members
+       WHERE group_id = ? AND account_id IS NOT NULL
+       ORDER BY joined_at ASC
+       LIMIT 1`,
+    )
+    .bind(group.id)
+    .first<{ accountId: string }>();
+  const organizerAccountId = organizer?.accountId || '';
+  const canManage = organizerAccountId === viewerAccountId;
 
   const summary = await db
     .prepare(
@@ -385,18 +411,24 @@ async function readGroup(code: string, practiceDate: string) {
 
   const members = await db
     .prepare(
-      `SELECT m.id, m.name, m.privacy,
+      `SELECT m.id, m.name, m.privacy, m.account_id AS accountId,
               MAX(0, COALESCE(SUM(c.amount), 0)) AS count
        FROM sangat_members AS m
        LEFT JOIN sangat_contributions AS c
          ON c.member_id = m.id AND c.practice_date = ?
        WHERE m.group_id = ? AND m.account_id IS NOT NULL
-       GROUP BY m.id, m.name, m.privacy, m.joined_at
+       GROUP BY m.id, m.name, m.privacy, m.account_id, m.joined_at
        ORDER BY count DESC, m.joined_at ASC
        LIMIT 100`,
     )
     .bind(practiceDate, group.id)
-    .all<{ id: string; name: string; privacy: Privacy; count: number }>();
+    .all<{
+      id: string;
+      name: string;
+      privacy: Privacy;
+      accountId: string;
+      count: number;
+    }>();
 
   return {
     code,
@@ -405,14 +437,21 @@ async function readGroup(code: string, practiceDate: string) {
     total: Number(summary?.total || 0),
     activeMembers: Number(summary?.activeMembers || 0),
     memberCount: members.results.length,
+    canManage,
     members: members.results
-      .filter((member) => member.privacy !== 'private')
+      .filter((member) => canManage || member.privacy !== 'private')
       .map((member) => ({
         id: member.id,
         name: member.name,
         privacy: member.privacy,
         count: member.privacy === 'exact' ? Number(member.count) : undefined,
         practiced: Number(member.count) > 0,
+        isYou: member.accountId === viewerAccountId,
+        isOrganizer: member.accountId === organizerAccountId,
+        canRemove:
+          canManage &&
+          member.accountId !== viewerAccountId &&
+          member.accountId !== organizerAccountId,
       })),
   };
 }
@@ -451,28 +490,42 @@ export async function GET(request: Request) {
   if (!membership) {
     const preview = await getDb()
       .prepare(
-        `SELECT name, daily_goal AS dailyGoal
+        `SELECT id, name, daily_goal AS dailyGoal
          FROM sangat_groups
          WHERE invite_code = ?`,
       )
       .bind(code)
-      .first<{ name: string; dailyGoal: number }>();
-    return preview
-      ? json({
-          group: {
-            code,
-            name: preview.name,
-            dailyGoal: Number(preview.dailyGoal),
-            total: 0,
-            activeMembers: 0,
-            memberCount: 0,
-            members: [],
-          },
-        })
-      : json({ error: 'This invite link is not active.' }, 404);
+      .first<{ id: string; name: string; dailyGoal: number }>();
+    if (!preview) return json({ error: 'This invite link is not active.' }, 404);
+
+    const removed = await getDb()
+      .prepare(
+        'SELECT 1 FROM sangat_removed_members WHERE group_id = ? AND account_id = ?',
+      )
+      .bind(preview.id, account.id)
+      .first();
+    if (removed) {
+      return json(
+        { error: 'You are no longer a member of this Sangat.', removed: true },
+        403,
+      );
+    }
+
+    return json({
+      group: {
+        code,
+        name: preview.name,
+        dailyGoal: Number(preview.dailyGoal),
+        total: 0,
+        activeMembers: 0,
+        memberCount: 0,
+        canManage: false,
+        members: [],
+      },
+    });
   }
 
-  const group = await readGroup(code, practiceDate);
+  const group = await readGroup(code, practiceDate, account.id);
   return group ? json({ group }) : json({ error: 'This invite link is not active.' }, 404);
 }
 
@@ -738,6 +791,19 @@ export async function POST(request: Request) {
       .first<{ id: string; name: string }>();
     if (!group) return json({ error: 'This invite link is not active.' }, 404);
 
+    const removedMembership = await db
+      .prepare(
+        'SELECT 1 FROM sangat_removed_members WHERE group_id = ? AND account_id = ?',
+      )
+      .bind(group.id, account.id)
+      .first();
+    if (removedMembership) {
+      return json(
+        { error: 'The Sangat organiser removed this account from the group.' },
+        403,
+      );
+    }
+
     const existingMembership = await db
       .prepare(
         `SELECT m.id AS memberId, m.name AS memberName, m.privacy
@@ -779,6 +845,69 @@ export async function POST(request: Request) {
         privacy,
       },
     });
+  }
+
+  if (action === 'remove_member') {
+    const code = cleanCode(body.code);
+    const memberId = cleanText(body.memberId, 80);
+
+    if (code.length !== 12 || !memberId) {
+      return json({ error: 'A valid Sangat and member are required.' }, 400);
+    }
+
+    const group = await db
+      .prepare('SELECT id FROM sangat_groups WHERE invite_code = ?')
+      .bind(code)
+      .first<{ id: string }>();
+    if (!group) return json({ error: 'This Sangat is not active.' }, 404);
+
+    const organizer = await db
+      .prepare(
+        `SELECT account_id AS accountId
+         FROM sangat_members
+         WHERE group_id = ? AND account_id IS NOT NULL
+         ORDER BY joined_at ASC
+         LIMIT 1`,
+      )
+      .bind(group.id)
+      .first<{ accountId: string }>();
+    if (!organizer || organizer.accountId !== account.id) {
+      return json({ error: 'Only the Sangat organiser can remove members.' }, 403);
+    }
+
+    const target = await db
+      .prepare(
+        `SELECT id, account_id AS accountId
+         FROM sangat_members
+         WHERE id = ? AND group_id = ? AND account_id IS NOT NULL`,
+      )
+      .bind(memberId, group.id)
+      .first<{ id: string; accountId: string }>();
+    if (!target) return json({ error: 'This member is no longer in the Sangat.' }, 404);
+    if (target.accountId === organizer.accountId) {
+      return json({ error: 'The Sangat organiser cannot be removed.' }, 400);
+    }
+
+    await db.batch([
+      db
+        .prepare(
+          `INSERT OR REPLACE INTO sangat_removed_members
+             (group_id, account_id, removed_at)
+           VALUES (?, ?, ?)`,
+        )
+        .bind(group.id, target.accountId, Date.now()),
+      db
+        .prepare(
+          'UPDATE sangat_members SET account_id = NULL WHERE id = ? AND group_id = ?',
+        )
+        .bind(target.id, group.id),
+    ]);
+
+    const practiceDate = validDate(body.practiceDate)
+      ? body.practiceDate
+      : new Date().toISOString().slice(0, 10);
+    const updatedGroup = await readGroup(code, practiceDate, account.id);
+    return json({ removed: true, group: updatedGroup });
   }
 
   if (action === 'contribute') {
@@ -831,7 +960,11 @@ export async function POST(request: Request) {
     );
     await db.batch(statements);
 
-    const group = await readGroup(code, events.at(-1)?.practiceDate || '');
+    const group = await readGroup(
+      code,
+      events.at(-1)?.practiceDate || '',
+      account.id,
+    );
     return json({ acceptedIds: events.map((event) => event.id), group });
   }
 
