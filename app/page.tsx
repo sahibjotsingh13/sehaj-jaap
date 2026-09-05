@@ -467,7 +467,7 @@ function Panel({
   return (
     <section
       className={cn(
-        'panel-surface rounded-[28px] border border-[color:var(--line)] bg-card shadow-[0_18px_55px_rgba(23,50,77,.06)]',
+        'panel-surface rounded-[24px] border border-[color:var(--line)] bg-card shadow-[0_8px_30px_rgba(40,62,62,.05)]',
         className,
       )}
     >
@@ -498,7 +498,7 @@ function SettingRow({
           {description}
         </p>
       </div>
-      {children}
+      <div className="setting-control shrink-0">{children}</div>
     </div>
   );
 }
@@ -529,7 +529,7 @@ function HeritageCard({
   return (
     <article
       className={cn(
-        'heritage-card group relative isolate min-h-[260px] overflow-hidden rounded-[28px] border border-white/20 bg-primary text-white shadow-[0_22px_60px_rgba(16,40,46,.16)]',
+        'heritage-card group relative isolate min-h-[280px] overflow-hidden rounded-[24px] border border-white/20 bg-primary text-white shadow-[0_18px_48px_rgba(16,40,46,.14)]',
         className,
       )}
     >
@@ -543,16 +543,13 @@ function HeritageCard({
       />
       <div aria-hidden="true" className="heritage-card-overlay absolute inset-0" />
       <div className="relative z-10 flex min-h-[inherit] flex-col justify-end p-5 sm:p-6">
-        <span className="mb-auto grid size-10 place-items-center rounded-full border border-white/25 bg-[#143b44]/45 font-gurmukhi text-lg text-[color:var(--gold-light)] backdrop-blur-md">
-          ੴ
-        </span>
         <p className="text-[11px] font-semibold tracking-[.15em] text-white/70 uppercase">
           {eyebrow}
         </p>
         <h3 className="mt-1 font-heading text-xl font-semibold tracking-[-.02em] sm:text-2xl">
           {title}
         </h3>
-        <p className="sr-only">
+        <p className="mt-2 max-w-md text-sm leading-6 text-white/72">
           {description}
         </p>
         <a
@@ -1654,24 +1651,22 @@ export default function Home() {
   if (!hydrated || !accountChecked) {
     return (
       <main className="auth-shell grid min-h-dvh place-items-center px-5 py-10 text-foreground">
-        <div className="text-center">
-          <span className="mx-auto grid size-16 place-items-center rounded-full bg-primary text-3xl text-primary-foreground shadow-[0_18px_45px_rgba(28,53,58,.2)]">
-            🪯
-          </span>
-          <p className="mt-5 font-gurmukhi text-3xl font-semibold text-primary">ਵਾਹਿਗੁਰੂ</p>
+        <output className="block text-center">
+          <span aria-hidden="true" className="loading-mark mx-auto block" />
+          <p className="mt-5 font-heading text-xl font-semibold text-primary">Sehaj Jaap</p>
           <p className="mt-2 text-sm text-muted-foreground">
             {tr('Preparing your peaceful space…', 'ਤੁਹਾਡੀ ਸ਼ਾਂਤ ਥਾਂ ਤਿਆਰ ਹੋ ਰਹੀ ਹੈ…')}
           </p>
-        </div>
+        </output>
       </main>
     );
   }
 
   if (!account) {
     return (
-      <main className="auth-shell min-h-dvh px-4 py-4 text-foreground sm:px-7 sm:py-7 lg:grid lg:place-items-center">
-        <div className="mx-auto grid w-full max-w-[1160px] overflow-hidden rounded-[32px] border border-white/55 bg-card shadow-[0_28px_90px_rgba(48,42,24,.14)] lg:min-h-[720px] lg:grid-cols-[1.08fr_.92fr]">
-          <section className="auth-visual relative isolate min-h-[290px] overflow-hidden bg-primary text-white sm:min-h-[360px] lg:min-h-full">
+      <main className="auth-shell min-h-dvh px-3 py-3 text-foreground sm:px-7 sm:py-7 lg:grid lg:place-items-center">
+        <div className="auth-card mx-auto grid w-full max-w-[1200px] overflow-hidden rounded-[28px] border border-white/55 bg-card shadow-[0_24px_80px_rgba(48,42,24,.13)] lg:min-h-[720px] lg:grid-cols-[1.08fr_.92fr]">
+          <section className="auth-visual relative isolate min-h-[270px] overflow-hidden bg-primary text-white sm:min-h-[360px] lg:min-h-full">
             <Image
               alt="Sri Harmandir Sahib reflected in the sarovar"
               className="object-cover"
@@ -1680,17 +1675,25 @@ export default function Home() {
               sizes="(max-width: 1024px) 100vw, 55vw"
               src="/golden-temple.jpg"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#122f35]/95 via-[#173942]/45 to-[#9a7330]/10" />
+            <div className="auth-visual-overlay absolute inset-0" />
             <div className="relative z-10 flex min-h-[inherit] flex-col p-6 sm:p-9 lg:min-h-full lg:p-12">
               <div className="flex items-center gap-3">
-                <span className="grid size-12 place-items-center rounded-full border border-white/25 bg-white/10 text-2xl backdrop-blur-md">🪯</span>
+                <span className="grid size-11 place-items-center rounded-[14px] border border-white/25 bg-white/10 text-xl backdrop-blur-sm" aria-hidden="true">🪯</span>
                 <div>
                   <p className="font-heading text-xl font-semibold">Sehaj Jaap</p>
                   <p className="font-gurmukhi text-sm text-white/65">ਸਹਿਜ ਜਾਪ</p>
                 </div>
               </div>
               <div className="mt-auto max-w-lg pt-14">
-                <p className="font-gurmukhi text-4xl font-semibold text-[color:var(--gold-light)] sm:text-5xl">ਵਾਹਿਗੁਰੂ</p>
+                <h1 className="font-heading text-[clamp(2.35rem,5vw,4rem)] font-semibold leading-[1.06] tracking-[-.04em] text-white">
+                  {tr('A peaceful space for Naam Simran.', 'ਨਾਮ ਸਿਮਰਨ ਲਈ ਇੱਕ ਸ਼ਾਂਤ ਥਾਂ।')}
+                </h1>
+                <p className="mt-4 max-w-md text-[15px] leading-7 text-white/72">
+                  {tr(
+                    'Count, focus and practise together — without distraction.',
+                    'ਗਿਣੋ, ਧਿਆਨ ਲਗਾਓ ਅਤੇ ਮਿਲ ਕੇ ਅਭਿਆਸ ਕਰੋ — ਬਿਨਾਂ ਭਟਕਾਵੇ।',
+                  )}
+                </p>
               </div>
             </div>
           </section>
@@ -1698,7 +1701,6 @@ export default function Home() {
           <section className="flex flex-col justify-center p-6 sm:p-10 lg:p-12">
             <div className="mb-8 flex items-center justify-between gap-4">
               <div>
-                <p className="eyebrow">{tr('Free for everyone', 'ਸਭ ਲਈ ਮੁਫ਼ਤ')}</p>
                 <h2 className="font-heading text-3xl font-semibold tracking-[-.035em]">
                   {accountMode === 'login'
                     ? tr('Welcome back', 'ਜੀ ਆਇਆਂ ਨੂੰ')
@@ -1708,6 +1710,8 @@ export default function Home() {
               <div className="flex rounded-full border border-[color:var(--line)] bg-secondary/70 p-1 text-xs">
                 <button
                   className={cn('rounded-full px-3 py-2', locale === 'en' && 'bg-card shadow-sm')}
+                  aria-label="Use English"
+                  aria-pressed={locale === 'en'}
                   onClick={() => setSettings((value) => ({ ...value, locale: 'en' }))}
                   type="button"
                 >
@@ -1715,6 +1719,8 @@ export default function Home() {
                 </button>
                 <button
                   className={cn('rounded-full px-3 py-2', locale === 'pa' && 'bg-card shadow-sm')}
+                  aria-label="ਪੰਜਾਬੀ ਵਰਤੋ"
+                  aria-pressed={locale === 'pa'}
                   onClick={() => setSettings((value) => ({ ...value, locale: 'pa' }))}
                   type="button"
                 >
@@ -1833,17 +1839,10 @@ export default function Home() {
                 {accountLoading
                   ? tr('Please wait…', 'ਕਿਰਪਾ ਕਰਕੇ ਉਡੀਕੋ…')
                   : accountMode === 'login'
-                    ? tr('Sign in securely', 'ਸੁਰੱਖਿਅਤ ਸਾਈਨ ਇਨ')
-                    : tr('Create my free account', 'ਮੇਰਾ ਮੁਫ਼ਤ ਖਾਤਾ ਬਣਾਓ')}
+                    ? tr('Sign in', 'ਸਾਈਨ ਇਨ')
+                    : tr('Create account', 'ਖਾਤਾ ਬਣਾਓ')}
               </button>
             </form>
-
-            <p className="mt-5 text-center text-xs font-medium text-muted-foreground">
-              {tr(
-                'Always free · No subscription · Same account works across your devices',
-                'ਹਮੇਸ਼ਾ ਮੁਫ਼ਤ · ਕੋਈ ਸਬਸਕ੍ਰਿਪਸ਼ਨ ਨਹੀਂ · ਇੱਕੋ ਖਾਤਾ ਤੁਹਾਡੇ ਸਾਰੇ ਡਿਵਾਈਸਾਂ ਉੱਤੇ ਕੰਮ ਕਰਦਾ ਹੈ',
-              )}
-            </p>
           </section>
         </div>
       </main>
@@ -1861,26 +1860,17 @@ export default function Home() {
       >
         <div className="focus-orbit" aria-hidden="true" />
         <header className="relative z-10 flex items-center justify-between px-5 py-5 sm:px-10">
-          <div className="flex items-center gap-3">
-            <span className="grid size-11 place-items-center rounded-full border border-white/15 bg-white/10 text-2xl">
-              🪯
-            </span>
-            <div>
-              <p className="font-semibold">Sehaj Jaap</p>
-              <p className="text-xs text-white/55">
-                {pacedAuto
-                  ? tr('Auto count active', 'ਆਟੋ ਗਿਣਤੀ ਚਾਲੂ ਹੈ')
-                  : tr('Focus session', 'ਧਿਆਨ ਸੈਸ਼ਨ')}
-              </p>
-            </div>
+          <div>
+            <p className="text-sm font-semibold">{tr('Focus', 'ਧਿਆਨ')}</p>
+            <p className="mt-0.5 text-xs text-white/55">
+              {pacedAuto
+                ? tr('Auto count active', 'ਆਟੋ ਗਿਣਤੀ ਚਾਲੂ ਹੈ')
+                : paused
+                  ? tr('Paused', 'ਰੁਕਿਆ ਹੋਇਆ')
+                  : tr('Session active', 'ਸੈਸ਼ਨ ਚਾਲੂ ਹੈ')}
+            </p>
           </div>
-          <button
-            className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/75 hover:bg-white/10"
-            onClick={completeFocus}
-            type="button"
-          >
-            {tr('End', 'ਸਮਾਪਤ')}
-          </button>
+          <span className="h-px w-14 bg-[color:var(--gold-light)]/45" aria-hidden="true" />
         </header>
 
         <section className="relative z-10 mx-auto flex min-h-[calc(100dvh-96px)] w-full max-w-3xl flex-col items-center justify-center px-5 pb-10 text-center">
@@ -1922,13 +1912,13 @@ export default function Home() {
             <span>
               {Math.floor(sessionCount / settings.malaSize)} {tr('Mala', 'ਮਾਲਾ')}
             </span>
-            <span className="text-[color:var(--gold-light)]">ੴ</span>
+            <span className="size-1 rounded-full bg-white/35" aria-hidden="true" />
             <span>
               {sessionCount % settings.malaSize} {tr('Jaap', 'ਜਾਪ')}
             </span>
             {targetedFocus && (
               <>
-                <span className="text-[color:var(--gold-light)]">ੴ</span>
+                <span className="size-1 rounded-full bg-white/35" aria-hidden="true" />
                 <span>
                   {formatNumber(sessionCount)} / {formatNumber(focusTarget)}
                 </span>
@@ -1965,16 +1955,16 @@ export default function Home() {
 
   const pageTitle =
     activeView === 'jaap'
-      ? tr('A quiet moment for Simran', 'ਸਿਮਰਨ ਲਈ ਇੱਕ ਸ਼ਾਂਤ ਪਲ')
+      ? tr('Jaap', 'ਜਾਪ')
       : activeView === 'sangat'
-        ? tr('Practice together, gently', 'ਮਿਲ ਕੇ ਸਹਿਜ ਨਾਲ ਅਭਿਆਸ ਕਰੋ')
+        ? tr('Sangat', 'ਸੰਗਤ')
         : activeView === 'focus'
-          ? tr('Create a focused session', 'ਧਿਆਨ ਵਾਲਾ ਸੈਸ਼ਨ ਬਣਾਓ')
+          ? tr('Focus', 'ਧਿਆਨ')
           : activeView === 'progress'
-            ? tr('Your practice, over time', 'ਸਮੇਂ ਦੇ ਨਾਲ ਤੁਹਾਡਾ ਅਭਿਆਸ')
+            ? tr('Progress', 'ਪ੍ਰਗਤੀ')
             : activeView === 'summary'
-              ? tr('Session complete', 'ਸੈਸ਼ਨ ਪੂਰਾ ਹੋਇਆ')
-              : tr('Settings & comfort', 'ਸੈਟਿੰਗਾਂ ਅਤੇ ਸਹੂਲਤ');
+              ? tr('Summary', 'ਸਾਰ')
+              : tr('More', 'ਹੋਰ');
 
   const navigationContent = (mobile = false) => (
     <>
@@ -2001,6 +1991,11 @@ export default function Home() {
         {navItems.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
+            aria-current={
+              activeView === id || (activeView === 'summary' && id === 'jaap')
+                ? 'page'
+                : undefined
+            }
             className={cn(
               'flex min-h-12 items-center gap-3 rounded-2xl px-4 text-left text-[.94rem] font-medium transition',
               activeView === id || (activeView === 'summary' && id === 'jaap')
@@ -2021,7 +2016,7 @@ export default function Home() {
 
       <Panel className="mt-auto rounded-[22px] p-4 shadow-none">
         <div className="mb-3 flex items-center gap-2 text-sm font-semibold">
-          <span aria-hidden="true" className="text-lg">🪯</span>
+          <Trophy aria-hidden="true" className="size-4 text-[color:var(--saffron)]" />
           {tr(
             String(currentStreak) + ' day practice streak',
             String(currentStreak) + ' ਦਿਨਾਂ ਦੀ ਲਗਾਤਾਰ ਸਾਧਨਾ',
@@ -2038,7 +2033,7 @@ export default function Home() {
                   : 'bg-secondary text-muted-foreground',
               )}
             >
-              {day.record.jaap >= settings.streakMinimum ? 'ੴ' : '·'}
+              {day.label.slice(0, 1)}
             </span>
           ))}
         </div>
@@ -2054,10 +2049,14 @@ export default function Home() {
       )}
     >
       <aside
+        aria-hidden={!settings.sidebarOpen}
         id="desktop-navigation"
+        inert={!settings.sidebarOpen}
         className={cn(
-          'fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col border-r border-[color:var(--line)] bg-[color:var(--sidebar)]/95 px-5 py-7 shadow-[12px_0_40px_rgba(23,50,77,.04)] backdrop-blur-xl transition-transform duration-300 md:flex',
-          settings.sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+          'fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col border-r border-[color:var(--line)] bg-[color:var(--sidebar)]/95 px-5 py-7 shadow-[12px_0_40px_rgba(23,50,77,.04)] backdrop-blur-xl transition-[transform,visibility] duration-300 xl:flex',
+          settings.sidebarOpen
+            ? 'visible translate-x-0'
+            : 'invisible -translate-x-full pointer-events-none',
         )}
       >
         {navigationContent()}
@@ -2081,29 +2080,22 @@ export default function Home() {
       <section
         className={cn(
           'min-h-dvh transition-[padding] duration-300',
-          settings.sidebarOpen ? 'md:pl-[248px]' : 'md:pl-0',
+          settings.sidebarOpen ? 'xl:pl-[248px]' : 'xl:pl-0',
         )}
       >
         <header className="site-header sticky top-0 z-20 flex min-h-[74px] items-center justify-between gap-3 border-b border-transparent px-4 py-3 sm:px-8 lg:px-12">
           <button
             aria-label={tr('Open navigation', 'ਨੇਵੀਗੇਸ਼ਨ ਖੋਲ੍ਹੋ')}
-            className="header-icon-button md:hidden"
+            className="header-icon-button xl:hidden"
             onClick={() => setMobileMenuOpen(true)}
             type="button"
           >
             <Menu aria-hidden="true" className="size-5" />
           </button>
-          <button
-            className="flex min-w-0 items-center gap-2 md:hidden"
-            onClick={() => setActiveView('jaap')}
-            type="button"
-          >
-            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-primary text-lg text-primary-foreground">
-              🪯
-            </span>
-            <span className="mobile-brand-label truncate font-heading font-semibold">Sehaj Jaap</span>
-          </button>
-          <div className="hidden items-center gap-4 md:flex">
+          <h1 className="min-w-0 truncate font-heading text-lg font-semibold xl:hidden">
+            {pageTitle}
+          </h1>
+          <div className="hidden items-center gap-4 xl:flex">
             <button
               aria-controls="desktop-navigation"
               aria-expanded={settings.sidebarOpen}
@@ -2127,7 +2119,7 @@ export default function Home() {
                 <PanelLeftOpen aria-hidden="true" className="size-5" />
               )}
             </button>
-            <p className="text-sm text-muted-foreground">{pageTitle}</p>
+            <h1 className="font-heading text-lg font-semibold">{pageTitle}</h1>
           </div>
           <div className="ml-auto flex items-center gap-2">
             <span
@@ -2154,6 +2146,8 @@ export default function Home() {
               aria-label={tr('Language', 'ਭਾਸ਼ਾ')}
             >
               <button
+                aria-label="Use English"
+                aria-pressed={locale === 'en'}
                 onClick={() =>
                   setSettings((value) => ({ ...value, locale: 'en' }))
                 }
@@ -2168,6 +2162,8 @@ export default function Home() {
                 EN
               </button>
               <button
+                aria-label="ਪੰਜਾਬੀ ਵਰਤੋ"
+                aria-pressed={locale === 'pa'}
                 onClick={() =>
                   setSettings((value) => ({ ...value, locale: 'pa' }))
                 }
@@ -2194,15 +2190,13 @@ export default function Home() {
         </header>
 
         {activeView === 'jaap' && (
-          <div className="mx-auto grid w-full max-w-[1180px] gap-7 px-4 pb-28 pt-2 sm:px-8 md:pb-10 lg:grid-cols-[minmax(0,1fr)_300px] lg:px-12 lg:pt-5">
+          <div className="view-stage mx-auto grid w-full max-w-[1200px] gap-7 px-4 pb-28 pt-2 sm:px-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:px-12 lg:pt-5 xl:pb-10">
             <Panel className="counter-panel relative isolate flex min-h-[calc(100dvh-108px)] flex-col items-center overflow-hidden px-5 pb-7 pt-8 sm:min-h-[690px] sm:px-9 sm:pt-10 lg:min-h-[730px]">
               <div aria-hidden="true" className="halo" />
               <div className="relative z-10 text-center">
+                <p className="eyebrow">{tr('Today', 'ਅੱਜ')}</p>
                 <p className="font-gurmukhi text-[clamp(2.4rem,7vw,4.6rem)] font-semibold leading-none tracking-[-.03em] text-primary">
                   ਵਾਹਿਗੁਰੂ
-                </p>
-                <p className="mt-3 text-sm font-medium tracking-[.12em] text-muted-foreground uppercase">
-                  {tr("Today's Jaap", 'ਅੱਜ ਦਾ ਜਾਪ')}
                 </p>
               </div>
 
@@ -2240,7 +2234,7 @@ export default function Home() {
                   <span>
                     {malas} {tr('Mala', 'ਮਾਲਾ')}
                   </span>
-                  <span className="text-[color:var(--gold)]">ੴ</span>
+                  <span className="size-1 rounded-full bg-[color:var(--gold)]" aria-hidden="true" />
                   <span>
                     {remainder} {tr('Jaap', 'ਜਾਪ')}
                   </span>
@@ -2319,24 +2313,15 @@ export default function Home() {
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">
-                      {tr('Daily goal', 'ਰੋਜ਼ਾਨਾ ਟੀਚਾ')}
+                      {tr('Goal', 'ਟੀਚਾ')}
                     </p>
                     <p className="mt-1 text-2xl font-semibold tracking-[-.03em]">
-                      {formatNumber(todayCount)}{' '}
-                      <span className="text-base font-normal text-muted-foreground">
-                        / {formatNumber(settings.dailyGoal)}
-                      </span>
+                      {formatNumber(settings.dailyGoal)}
                     </p>
                   </div>
                   <div className="progress-ring" style={progressStyle}>
                     <span>{progress}%</span>
                   </div>
-                </div>
-                <div className="mt-5 h-2.5 overflow-hidden rounded-full bg-secondary">
-                  <div
-                    className="h-full rounded-full bg-[color:var(--saffron)] transition-[width] duration-300"
-                    style={{ width: String(progress) + '%' }}
-                  />
                 </div>
                 <p className="mt-3 text-xs text-muted-foreground">
                   {formatNumber(Math.max(0, settings.dailyGoal - todayCount))}{' '}
@@ -2351,59 +2336,46 @@ export default function Home() {
                 type="button"
               >
                 <span>
-                  <span className="block text-xs tracking-[.14em] text-white/60 uppercase">
-                    {tr('Focus mode', 'ਧਿਆਨ ਮੋਡ')}
-                  </span>
-                  <span className="mt-1 block text-lg font-semibold">
+                  <span className="block text-lg font-semibold">{tr('Focus', 'ਧਿਆਨ')}</span>
+                  <span className="mt-1 block text-xs text-white/60">
                     {tr('Begin a session', 'ਸੈਸ਼ਨ ਸ਼ੁਰੂ ਕਰੋ')}
                   </span>
                 </span>
                 <span className="grid size-11 place-items-center rounded-full bg-white/10 transition group-hover:bg-white/15">
-                  <span aria-hidden="true" className="text-xl">ੴ</span>
+                  <Focus aria-hidden="true" className="size-5" />
                 </span>
               </button>
 
-              <Panel className="media-panel group overflow-hidden">
-                <div className="relative h-36">
-                  <Image
-                    alt="Golden Temple reflected in the sarovar"
-                    className="heritage-card-image object-cover"
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 300px"
-                    src="/golden-temple.jpg"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#12333b]/75 via-[#12333b]/10 to-transparent" />
-                  <p className="absolute bottom-4 left-5 text-sm font-semibold text-white">
-                    {membership
-                      ? membership.groupName
-                      : tr('Create your family Sangat', 'ਆਪਣੀ ਪਰਿਵਾਰਕ ਸੰਗਤ ਬਣਾਓ')}
-                  </p>
-                </div>
-                <button
-                  className="flex min-h-14 w-full items-center justify-between px-5 text-left text-sm font-semibold"
-                  onClick={() => setActiveView('sangat')}
-                  type="button"
-                >
-                  {tr('Practice together online', 'ਆਨਲਾਈਨ ਮਿਲ ਕੇ ਅਭਿਆਸ ਕਰੋ')}
-                  <ChevronRight aria-hidden="true" className="size-4" />
-                </button>
-              </Panel>
+              <button
+                className="practice-link-card group flex min-h-32 w-full items-center gap-4 rounded-[24px] border border-[color:var(--line)] bg-card p-5 text-left shadow-[0_8px_30px_rgba(40,62,62,.05)]"
+                onClick={() => setActiveView('sangat')}
+                type="button"
+              >
+                <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-[color:var(--mist)] text-primary">
+                  <UsersRound aria-hidden="true" className="size-5" />
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-semibold">
+                    {membership ? membership.groupName : tr('Sangat', 'ਸੰਗਤ')}
+                  </span>
+                  <span className="mt-1 block text-sm text-muted-foreground">
+                    {tr('Practice together online', 'ਆਨਲਾਈਨ ਮਿਲ ਕੇ ਅਭਿਆਸ ਕਰੋ')}
+                  </span>
+                </span>
+                <ChevronRight aria-hidden="true" className="size-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+              </button>
             </aside>
           </div>
         )}
 
         {activeView === 'focus' && (
-          <div className="mx-auto grid w-full max-w-[1120px] gap-6 px-4 pb-28 pt-3 sm:px-8 md:pb-12 lg:grid-cols-[minmax(0,1fr)_340px] lg:px-12">
+          <div className="view-stage mx-auto w-full max-w-[920px] px-4 pb-28 pt-3 sm:px-8 lg:px-12 xl:pb-12">
             <Panel className="p-6 sm:p-8 lg:p-10">
               <div className="mb-8">
-                <p className="eyebrow">{tr('Focus mode', 'ਧਿਆਨ ਮੋਡ')}</p>
-                <h1 className="page-heading">
-                  {tr('Choose how you want to practise', 'ਆਪਣਾ ਅਭਿਆਸ ਚੁਣੋ')}
-                </h1>
-                <p className="mt-3 max-w-xl text-muted-foreground">
+                <p className="max-w-xl text-[15px] leading-6 text-muted-foreground">
                   {tr(
-                    'Navigation disappears during the session so only your Jaap, time, and progress remain.',
-                    'ਸੈਸ਼ਨ ਦੌਰਾਨ ਨੇਵੀਗੇਸ਼ਨ ਲੁਕ ਜਾਂਦੀ ਹੈ ਤਾਂ ਜੋ ਸਿਰਫ਼ ਜਾਪ, ਸਮਾਂ ਅਤੇ ਪ੍ਰਗਤੀ ਰਹੇ।',
+                    'Create a distraction-free practice session.',
+                    'ਬਿਨਾਂ ਭਟਕਾਵੇ ਦੇ ਅਭਿਆਸ ਲਈ ਸੈਸ਼ਨ ਬਣਾਓ।',
                   )}
                 </p>
               </div>
@@ -2414,9 +2386,9 @@ export default function Home() {
               >
                 <TabsList className="focus-tabs h-auto w-full gap-2 bg-transparent p-0">
                   <TabsTrigger value="timer">{tr('Timer', 'ਟਾਈਮਰ')}</TabsTrigger>
-                  <TabsTrigger value="target">{tr('Count goal', 'ਗਿਣਤੀ ਟੀਚਾ')}</TabsTrigger>
-                  <TabsTrigger value="both">{tr('Timer + goal', 'ਟਾਈਮਰ + ਟੀਚਾ')}</TabsTrigger>
-                  <TabsTrigger value="paced">{tr('Paced Jaap', 'ਰਫ਼ਤਾਰ ਵਾਲਾ ਜਾਪ')}</TabsTrigger>
+                  <TabsTrigger value="target">{tr('Target', 'ਟੀਚਾ')}</TabsTrigger>
+                  <TabsTrigger value="both">{tr('Timer + target', 'ਟਾਈਮਰ + ਟੀਚਾ')}</TabsTrigger>
+                  <TabsTrigger value="paced">{tr('Paced', 'ਰਫ਼ਤਾਰ')}</TabsTrigger>
                 </TabsList>
               </Tabs>
 
@@ -2426,7 +2398,8 @@ export default function Home() {
                   <div className="choice-grid">
                     {[5, 10, 15, 20, 30, 45, 60].map((minutes) => (
                       <button
-                        key={minutes}
+                          key={minutes}
+                          aria-pressed={focusMinutes === minutes}
                         className={cn('choice-chip', focusMinutes === minutes && 'selected')}
                         onClick={() => setFocusMinutes(minutes)}
                         type="button"
@@ -2458,11 +2431,12 @@ export default function Home() {
 
               {(focusMode === 'target' || focusMode === 'both') && (
                 <div className="mt-8">
-                  <p className="field-label">{tr('Jaap target', 'ਜਾਪ ਟੀਚਾ')}</p>
+                  <p className="field-label">{tr('Target', 'ਟੀਚਾ')}</p>
                   <div className="choice-grid">
                     {[108, 216, 500, 1000, 2500].map((target) => (
                       <button
-                        key={target}
+                          key={target}
+                          aria-pressed={focusTarget === target}
                         className={cn('choice-chip', focusTarget === target && 'selected')}
                         onClick={() => setFocusTarget(target)}
                         type="button"
@@ -2498,11 +2472,12 @@ export default function Home() {
               {focusMode === 'paced' && (
                 <>
                   <div className="mt-8">
-                    <p className="field-label">{tr('One Jaap every', 'ਹਰ ਜਾਪ ਲਈ')}</p>
+                    <p className="field-label">{tr('Pace', 'ਰਫ਼ਤਾਰ')}</p>
                     <div className="choice-grid">
                       {[1, 2, 3, 5].map((pace) => (
                         <button
                           key={pace}
+                          aria-pressed={focusPace === pace}
                           className={cn('choice-chip', focusPace === pace && 'selected')}
                           onClick={() => setFocusPace(pace)}
                           type="button"
@@ -2532,6 +2507,7 @@ export default function Home() {
                   </div>
                   <div className="mt-8 grid gap-3 sm:grid-cols-2">
                     <button
+                      aria-pressed={!pacedAuto}
                       className={cn('mode-card', !pacedAuto && 'selected')}
                       onClick={() => setPacedAuto(false)}
                       type="button"
@@ -2545,6 +2521,7 @@ export default function Home() {
                       </span>
                     </button>
                     <button
+                      aria-pressed={pacedAuto}
                       className={cn('mode-card', pacedAuto && 'selected')}
                       onClick={() => setPacedAuto(true)}
                       type="button"
@@ -2567,102 +2544,39 @@ export default function Home() {
                 type="button"
               >
                 <Play aria-hidden="true" className="size-5" />
-                {tr('Start focus session', 'ਧਿਆਨ ਸੈਸ਼ਨ ਸ਼ੁਰੂ ਕਰੋ')}
+                {tr('Start session', 'ਸੈਸ਼ਨ ਸ਼ੁਰੂ ਕਰੋ')}
               </button>
-            </Panel>
-
-            <Panel className="media-panel group overflow-hidden">
-              <div className="relative min-h-[430px]">
-                <Image
-                  alt="Historic painting of Guru Nanak"
-                  className="heritage-card-image object-cover object-top"
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 340px"
-                  src="/guru-nanak-historic.jpg"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#102f38] via-[#102f38]/25 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-7 text-white">
-                  <span className="mb-3 block text-2xl text-[color:var(--gold-light)]">ੴ</span>
-                  <p className="font-gurmukhi text-3xl font-semibold">ਵਾਹਿਗੁਰੂ</p>
-                  <p className="mt-2 text-sm leading-6 text-white/72">
-                    {tr(
-                      'Let the pace support attention, never rush it.',
-                      'ਰਫ਼ਤਾਰ ਧਿਆਨ ਨੂੰ ਸਹਾਰਾ ਦੇਵੇ, ਕਦੇ ਜਲਦੀ ਨਾ ਕਰੇ।',
-                    )}
-                  </p>
-                </div>
-              </div>
-              <p className="px-5 py-3 text-[11px] leading-4 text-muted-foreground">
-                {tr(
-                  'Historic Guru Nanak artwork, unknown artist, c. 1800–1840. ',
-                  'ਗੁਰੂ ਨਾਨਕ ਜੀ ਦੀ ਇਤਿਹਾਸਕ ਕਲਾ, ਅਣਜਾਣ ਕਲਾਕਾਰ, ਲਗਭਗ 1800–1840। ',
-                )}
-                <a
-                  className="underline decoration-current/30 underline-offset-2 hover:text-foreground"
-                  href="https://commons.wikimedia.org/wiki/File:Guru_Nanak_(the_first_Sikh_Guru),_from_a_series_of_painting_of_the_first_nine_Sikh_gurus,_circa_1800%E2%80%931840.jpg"
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  {tr('Public domain source.', 'ਪਬਲਿਕ ਡੋਮੇਨ ਸਰੋਤ।')}
-                </a>
-              </p>
             </Panel>
           </div>
         )}
 
         {activeView === 'sangat' && (
-          <div className="mx-auto w-full max-w-[1120px] px-4 pb-28 pt-3 sm:px-8 md:pb-12 lg:px-12">
+          <div className="view-stage mx-auto w-full max-w-[1120px] px-4 pb-28 pt-3 sm:px-8 lg:px-12 xl:pb-12">
             {!membership ? (
               <div className="grid gap-6 lg:grid-cols-[.9fr_1.1fr]">
-                <Panel className="media-panel group overflow-hidden">
-                  <div className="relative min-h-[310px] lg:min-h-[620px]">
-                    <Image
-                      alt="Golden Temple and sarovar"
-                      className="heritage-card-image object-cover"
-                      fill
-                      sizes="(max-width: 1024px) 100vw, 50vw"
-                      src="/golden-temple.jpg"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0e3039]/90 via-[#0e3039]/30 to-transparent" />
-                    <div className="absolute inset-x-0 bottom-0 p-7 text-white sm:p-9">
-                      <span className="text-3xl" aria-hidden="true">🪯</span>
-                      <h1 className="mt-4 font-heading text-3xl font-semibold sm:text-4xl">
-                        {tr('Jaap grows in Sangat', 'ਸੰਗਤ ਵਿੱਚ ਜਾਪ ਵਧਦਾ ਹੈ')}
-                      </h1>
-                      <p className="mt-3 max-w-md leading-7 text-white/75">
-                        {tr(
-                          'Create a private group, share one invite link, and let family or friends add to a peaceful collective goal from anywhere.',
-                          'ਇੱਕ ਨਿੱਜੀ ਗਰੁੱਪ ਬਣਾਓ, ਇੱਕ ਸੱਦਾ ਲਿੰਕ ਸਾਂਝਾ ਕਰੋ ਅਤੇ ਪਰਿਵਾਰ ਜਾਂ ਦੋਸਤਾਂ ਨੂੰ ਕਿਤੇ ਤੋਂ ਵੀ ਸਾਂਝੇ ਟੀਚੇ ਵਿੱਚ ਜੋੜੋ।',
-                        )}
-                      </p>
-                    </div>
-                  </div>
-                  <p className="px-5 py-3 text-[11px] text-muted-foreground">
-                    {tr('Golden Temple image: ', 'ਸ੍ਰੀ ਹਰਿਮੰਦਰ ਸਾਹਿਬ ਤਸਵੀਰ: ')}
-                    <a
-                      className="underline decoration-current/30 underline-offset-2 hover:text-foreground"
-                      href="https://commons.wikimedia.org/wiki/File:Golden_Temple_.jpg"
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      Jasdeep Singh / Wikimedia Commons, CC0
-                    </a>
-                    .
+                <Panel className="sangat-intro flex min-h-[300px] flex-col justify-end overflow-hidden p-7 text-primary-foreground sm:p-9 lg:min-h-[560px]">
+                  <span className="grid size-12 place-items-center rounded-2xl bg-white/10" aria-hidden="true">
+                    <UsersRound className="size-6" />
+                  </span>
+                  <h1 className="mt-6 font-heading text-3xl font-semibold tracking-[-.035em] sm:text-4xl">
+                    {tr('Practice together.', 'ਮਿਲ ਕੇ ਅਭਿਆਸ ਕਰੋ।')}
+                  </h1>
+                  <p className="mt-3 max-w-md text-[15px] leading-7 text-white/68">
+                    {tr(
+                      'Create or join a private group and share one daily intention.',
+                      'ਇੱਕ ਨਿੱਜੀ ਗਰੁੱਪ ਬਣਾਓ ਜਾਂ ਜੁੜੋ ਅਤੇ ਇੱਕ ਰੋਜ਼ਾਨਾ ਸੰਕਲਪ ਸਾਂਝਾ ਕਰੋ।',
+                    )}
                   </p>
                 </Panel>
 
                 <Panel className="p-6 sm:p-8 lg:p-10">
-                  <p className="eyebrow">{tr('Online Sangat', 'ਆਨਲਾਈਨ ਸੰਗਤ')}</p>
                   <h2 className="page-heading">
                     {groupData && groupMode === 'join'
                       ? tr('Join ', 'ਸ਼ਾਮਲ ਹੋਵੋ: ') + groupData.name
-                      : tr('Begin together', 'ਮਿਲ ਕੇ ਸ਼ੁਰੂ ਕਰੋ')}
+                      : tr('Create or join', 'ਬਣਾਓ ਜਾਂ ਜੁੜੋ')}
                   </h2>
-                  <p className="mt-3 text-muted-foreground">
-                    {tr(
-                      'Signed in as @' + account.username + '. Every Sangat member joins with their own free account.',
-                      '@' + account.username + ' ਵਜੋਂ ਸਾਈਨ ਇਨ ਹੈ। ਹਰ ਸੰਗਤ ਮੈਂਬਰ ਆਪਣੇ ਮੁਫ਼ਤ ਖਾਤੇ ਨਾਲ ਜੁੜਦਾ ਹੈ।',
-                    )}
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    {tr('Signed in as @', '@ ਵਜੋਂ ਸਾਈਨ ਇਨ: ')}{account.username}
                   </p>
 
                   <Tabs
@@ -2673,11 +2587,11 @@ export default function Home() {
                     <TabsList className="h-11 w-full rounded-2xl bg-secondary p-1">
                       <TabsTrigger className="rounded-xl" value="join">
                         <Link2 aria-hidden="true" />
-                        {tr('Join with link', 'ਲਿੰਕ ਨਾਲ ਜੁੜੋ')}
+                        {tr('Join', 'ਜੁੜੋ')}
                       </TabsTrigger>
                       <TabsTrigger className="rounded-xl" value="create">
                         <UsersRound aria-hidden="true" />
-                        {tr('Create Sangat', 'ਸੰਗਤ ਬਣਾਓ')}
+                        {tr('Create', 'ਬਣਾਓ')}
                       </TabsTrigger>
                     </TabsList>
                   </Tabs>
@@ -2686,7 +2600,7 @@ export default function Home() {
                     {groupMode === 'create' ? (
                       <>
                         <label className="grid gap-2">
-                          <span className="field-label">{tr('Sangat name', 'ਸੰਗਤ ਦਾ ਨਾਮ')}</span>
+                          <span className="field-label">{tr('Group name', 'ਗਰੁੱਪ ਦਾ ਨਾਮ')}</span>
                           <input
                             className="text-input"
                             maxLength={64}
@@ -2775,8 +2689,8 @@ export default function Home() {
                       {groupLoading
                         ? tr('Please wait…', 'ਕਿਰਪਾ ਕਰਕੇ ਉਡੀਕੋ…')
                         : groupMode === 'join'
-                          ? tr('Join Sangat', 'ਸੰਗਤ ਵਿੱਚ ਜੁੜੋ')
-                          : tr('Create and get link', 'ਬਣਾਓ ਅਤੇ ਲਿੰਕ ਲਵੋ')}
+                          ? tr('Join', 'ਜੁੜੋ')
+                          : tr('Create', 'ਬਣਾਓ')}
                     </button>
                   </form>
                 </Panel>
@@ -2784,43 +2698,29 @@ export default function Home() {
             ) : (
               <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_360px]">
                 <div className="grid gap-6">
-                  <Panel className="media-panel group overflow-hidden">
-                    <div className="relative min-h-[300px]">
-                      <Image
-                        alt="Golden Temple and sarovar"
-                        className="heritage-card-image object-cover"
-                        fill
-                        sizes="(max-width: 1024px) 100vw, 65vw"
-                        src="/golden-temple.jpg"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-r from-[#102f38]/95 via-[#102f38]/75 to-[#102f38]/15" />
-                      <div className="relative z-10 flex min-h-[300px] max-w-lg flex-col justify-center p-7 text-white sm:p-10">
-                        <span className="text-3xl" aria-hidden="true">🪯</span>
-                        <p className="mt-5 text-sm tracking-[.14em] text-white/55 uppercase">
-                          {tr("Today's Sangat Jaap", 'ਅੱਜ ਦਾ ਸੰਗਤ ਜਾਪ')}
-                        </p>
-                        <h1 className="mt-2 text-[clamp(3rem,8vw,5.2rem)] font-semibold leading-none tracking-[-.06em] tabular-nums">
-                          {formatNumber(groupData?.total ?? 0)}
-                        </h1>
-                        <p className="mt-5 text-sm text-white/70">
-                          {groupData?.activeMembers ?? 0}{' '}
-                          {tr('members practised today', 'ਮੈਂਬਰਾਂ ਨੇ ਅੱਜ ਅਭਿਆਸ ਕੀਤਾ')}
-                        </p>
-                      </div>
-                    </div>
+                  <Panel className="sangat-summary overflow-hidden p-7 text-primary-foreground sm:p-10">
+                    <p className="text-xs font-semibold tracking-[.15em] text-white/55 uppercase">
+                      {tr('Today', 'ਅੱਜ')}
+                    </p>
+                    <h1 className="mt-3 text-[clamp(3.5rem,9vw,6rem)] font-semibold leading-none tracking-[-.07em] tabular-nums">
+                      {formatNumber(groupData?.total ?? 0)}
+                    </h1>
+                    <p className="mt-6 text-sm text-white/68">
+                      {groupData?.activeMembers ?? 0}{' '}
+                      {tr('members practised', 'ਮੈਂਬਰਾਂ ਨੇ ਅਭਿਆਸ ਕੀਤਾ')}
+                    </p>
                   </Panel>
 
                   <Panel className="p-6 sm:p-8">
                     <div className="flex flex-wrap items-end justify-between gap-4">
                       <div>
-                        <p className="eyebrow">{tr('Collective goal', 'ਸਾਂਝਾ ਟੀਚਾ')}</p>
                         <h2 className="text-2xl font-semibold">{membership.groupName}</h2>
                       </div>
-                      <p className="text-lg font-semibold">
-                        {formatNumber(groupData?.total ?? 0)}
-                        <span className="text-sm font-normal text-muted-foreground">
-                          {' '}/ {formatNumber(groupData?.dailyGoal ?? 0)}
-                        </span>
+                      <p className="text-right text-sm text-muted-foreground">
+                        {tr('Goal', 'ਟੀਚਾ')}{' '}
+                        <strong className="block text-lg text-foreground">
+                          {formatNumber(groupData?.dailyGoal ?? 0)}
+                        </strong>
                       </p>
                     </div>
                     <div className="mt-5 h-3 overflow-hidden rounded-full bg-secondary">
@@ -2867,15 +2767,9 @@ export default function Home() {
                 <div className="grid content-start gap-6">
                   <Panel className="p-6">
                     <div className="flex items-center justify-between">
-                      <div>
-                        <p className="eyebrow">{tr('Live Sangat', 'ਲਾਈਵ ਸੰਗਤ')}</p>
-                        <h2 className="text-xl font-semibold">
-                          {groupData?.memberCount ?? 1} {tr('members', 'ਮੈਂਬਰ')}
-                        </h2>
-                      </div>
-                      <span className="flex items-center gap-2 rounded-full bg-[color:var(--mist)] px-3 py-2 text-xs text-primary">
-                        <span className="size-2 rounded-full bg-[#5f9e79]" />
-                        {tr('Live', 'ਲਾਈਵ')}
+                      <h2 className="text-xl font-semibold">{tr('Members', 'ਮੈਂਬਰ')}</h2>
+                      <span className="text-sm text-muted-foreground tabular-nums">
+                        {groupData?.memberCount ?? 1}
                       </span>
                     </div>
                     <div className="mt-6 grid gap-2">
@@ -2934,25 +2828,11 @@ export default function Home() {
         )}
 
         {activeView === 'progress' && (
-          <div className="mx-auto w-full max-w-[1120px] px-4 pb-28 pt-3 sm:px-8 md:pb-12 lg:px-12">
-            <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="eyebrow">{tr('Progress', 'ਪ੍ਰਗਤੀ')}</p>
-                <h1 className="page-heading">{tr('Your steady rhythm', 'ਤੁਹਾਡੀ ਸਹਿਜ ਲੈਅ')}</h1>
-              </div>
-              <Tabs defaultValue="7days">
-                <TabsList className="h-10 rounded-2xl bg-secondary p-1">
-                  <TabsTrigger value="today">{tr('Today', 'ਅੱਜ')}</TabsTrigger>
-                  <TabsTrigger value="7days">{tr('7 days', '੭ ਦਿਨ')}</TabsTrigger>
-                  <TabsTrigger value="month">{tr('Month', 'ਮਹੀਨਾ')}</TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
-
+          <div className="view-stage mx-auto w-full max-w-[1120px] px-4 pb-28 pt-3 sm:px-8 lg:px-12 xl:pb-12">
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {[
-                { label: tr('7 day Jaap', '੭ ਦਿਨਾਂ ਦਾ ਜਾਪ'), value: formatNumber(weekTotal), icon: MousePointerClick },
-                { label: tr('Mala', 'ਮਾਲਾ'), value: formatNumber(Math.floor(weekTotal / settings.malaSize)), icon: Target },
+                { label: tr('This week', 'ਇਸ ਹਫ਼ਤੇ'), value: formatNumber(weekTotal), icon: MousePointerClick },
+                { label: tr('Malas', 'ਮਾਲਾ'), value: formatNumber(Math.floor(weekTotal / settings.malaSize)), icon: Target },
                 { label: tr('Current streak', 'ਮੌਜੂਦਾ ਲੜੀ'), value: String(currentStreak) + ' ' + tr('days', 'ਦਿਨ'), icon: CalendarDays },
                 { label: tr('Longest streak', 'ਸਭ ਤੋਂ ਲੰਮੀ ਲੜੀ'), value: String(longestStreak) + ' ' + tr('days', 'ਦਿਨ'), icon: Trophy },
               ].map(({ label, value, icon: Icon }) => (
@@ -2967,10 +2847,7 @@ export default function Home() {
             <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_.9fr]">
               <Panel className="p-6 sm:p-8">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="eyebrow">{tr('Last 7 days', 'ਪਿਛਲੇ ੭ ਦਿਨ')}</p>
-                    <h2 className="text-xl font-semibold">{tr('Daily Jaap', 'ਰੋਜ਼ਾਨਾ ਜਾਪ')}</h2>
-                  </div>
+                  <h2 className="text-xl font-semibold">{tr('This week', 'ਇਸ ਹਫ਼ਤੇ')}</h2>
                   <span className="text-sm text-muted-foreground">
                     {tr('Goal', 'ਟੀਚਾ')} {formatNumber(settings.dailyGoal)}
                   </span>
@@ -3009,24 +2886,33 @@ export default function Home() {
                 </div>
               </Panel>
 
-              <Panel className="p-6 sm:p-8">
+              <Panel className="calendar-panel p-4 sm:p-8">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="eyebrow">{tr('Practice calendar', 'ਅਭਿਆਸ ਕੈਲੰਡਰ')}</p>
+                    <p className="eyebrow">{tr('Calendar', 'ਕੈਲੰਡਰ')}</p>
                     <h2 className="text-xl font-semibold">
                       {new Intl.DateTimeFormat(locale === 'pa' ? 'pa-IN' : 'en-IN', {
                         month: 'long',
                       }).format(new Date())}
                     </h2>
                   </div>
-                  <span aria-hidden="true" className="text-2xl">🪯</span>
                 </div>
-                <div className="mt-7 grid grid-cols-7 gap-2">
+                <div className="calendar-grid mt-7 grid grid-cols-7 gap-1.5">
                   {calendarDays.map(({ key, date, record }) => {
                     const complete = (record?.jaap ?? 0) >= settings.streakMinimum;
                     return (
                       <button
                         key={key}
+                        aria-label={
+                          new Intl.DateTimeFormat(locale === 'pa' ? 'pa-IN' : 'en-IN', {
+                            day: 'numeric',
+                            month: 'long',
+                          }).format(date) +
+                          ': ' +
+                          formatNumber(record?.jaap ?? 0) +
+                          ' ' +
+                          tr('Jaap', 'ਜਾਪ')
+                        }
                         className={cn(
                           'grid aspect-square place-items-center rounded-full text-xs transition',
                           complete
@@ -3037,7 +2923,7 @@ export default function Home() {
                         onClick={() => setSelectedDay(key)}
                         type="button"
                       >
-                        {complete ? 'ੴ' : date.getDate()}
+                        {date.getDate()}
                       </button>
                     );
                   })}
@@ -3090,11 +2976,10 @@ export default function Home() {
         )}
 
         {activeView === 'more' && (
-          <div className="mx-auto grid w-full max-w-[1000px] gap-6 px-4 pb-28 pt-3 sm:px-8 md:pb-12 lg:grid-cols-[minmax(0,1fr)_300px] lg:px-12">
+          <div className="view-stage mx-auto grid w-full max-w-[1120px] gap-6 px-4 pb-28 pt-3 sm:px-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:px-12 xl:pb-12">
             <Panel className="p-6 sm:p-8">
-              <p className="eyebrow">{tr('Settings', 'ਸੈਟਿੰਗਾਂ')}</p>
-              <h1 className="page-heading">{tr('Make Jaap comfortable', 'ਜਾਪ ਨੂੰ ਸਹਿਜ ਬਣਾਓ')}</h1>
-              <div className="mt-7">
+              <div>
+                <h2 className="settings-section-label">{tr('Practice', 'ਅਭਿਆਸ')}</h2>
                 <SettingRow
                   icon={<SlidersHorizontal aria-hidden="true" className="size-5" />}
                   label={tr('Jaap per Mala', 'ਹਰ ਮਾਲਾ ਵਿੱਚ ਜਾਪ')}
@@ -3144,7 +3029,7 @@ export default function Home() {
                   />
                 </SettingRow>
                 <SettingRow
-                  icon={<span aria-hidden="true" className="text-lg">ੴ</span>}
+                  icon={<BarChart3 aria-hidden="true" className="size-5" />}
                   label={tr('Mala goal', 'ਮਾਲਾ ਟੀਚਾ')}
                   description={tr('Choose a Mala goal; Jaap updates automatically.', 'ਮਾਲਾ ਟੀਚਾ ਚੁਣੋ; ਜਾਪ ਆਪਣੇ ਆਪ ਬਦਲਦਾ ਹੈ।')}
                 >
@@ -3178,6 +3063,7 @@ export default function Home() {
                     ))}
                   </NativeSelect>
                 </SettingRow>
+                <h2 className="settings-section-label mt-7">{tr('Experience', 'ਅਨੁਭਵ')}</h2>
                 <SettingRow
                   icon={<CalendarDays aria-hidden="true" className="size-5" />}
                   label={tr('Streak minimum', 'ਲੜੀ ਲਈ ਘੱਟੋ-ਘੱਟ')}
@@ -3264,23 +3150,13 @@ export default function Home() {
 
             <div className="grid content-start gap-6">
               <Panel className="p-6">
-                <span className="grid size-12 place-items-center rounded-full bg-primary text-2xl text-primary-foreground">
-                  🪯
+                <span className="grid size-12 place-items-center rounded-2xl bg-[color:var(--mist)] text-primary">
+                  <CircleUserRound aria-hidden="true" className="size-6" />
                 </span>
                 <h2 className="mt-5 text-xl font-semibold">{account.displayName}</h2>
                 <p className="mt-1 text-sm font-medium text-[color:var(--saffron)]">
                   @{account.username}
                 </p>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {tr(
-                    'Your private Jaap history is separated from other accounts on this device and remains available offline.',
-                    'ਤੁਹਾਡਾ ਨਿੱਜੀ ਜਾਪ ਇਤਿਹਾਸ ਇਸ ਡਿਵਾਈਸ ਉੱਤੇ ਹੋਰ ਖਾਤਿਆਂ ਤੋਂ ਵੱਖਰਾ ਹੈ ਅਤੇ ਆਫਲਾਈਨ ਵੀ ਉਪਲਬਧ ਰਹਿੰਦਾ ਹੈ।',
-                  )}
-                </p>
-                <div className="mt-5 flex items-center gap-2 text-xs text-muted-foreground">
-                  <ShieldCheck aria-hidden="true" className="size-4" />
-                  {tr('Private by default', 'ਮੂਲ ਰੂਪ ਵਿੱਚ ਨਿੱਜੀ')}
-                </div>
                 <button className="outline-action mt-5 w-full" onClick={signOut} type="button">
                   <LogOut aria-hidden="true" />
                   {tr('Sign out', 'ਸਾਈਨ ਆਉਟ')}
@@ -3306,16 +3182,11 @@ export default function Home() {
 
             <section className="heritage-gallery lg:col-span-2">
               <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-                <div>
-                  <p className="eyebrow">{tr('Sikh heritage', 'ਸਿੱਖ ਵਿਰਾਸਤ')}</p>
-                  <h2 className="page-heading">
-                    {tr('Sacred places, held with care', 'ਪਵਿੱਤਰ ਅਸਥਾਨ, ਸਤਿਕਾਰ ਨਾਲ')}
-                  </h2>
-                </div>
+                <h2 className="page-heading">{tr('Sikh heritage', 'ਸਿੱਖ ਵਿਰਾਸਤ')}</h2>
                 <p className="max-w-sm text-sm leading-6 text-muted-foreground">
                   {tr(
-                    'A quiet visual journey through historic Takhts, Gurdwaras, and freely shared puratan art.',
-                    'ਇਤਿਹਾਸਕ ਤਖ਼ਤਾਂ, ਗੁਰਦੁਆਰਾ ਸਾਹਿਬਾਨ ਅਤੇ ਮੁਫ਼ਤ ਸਾਂਝੀ ਪੁਰਾਤਨ ਕਲਾ ਦੀ ਸ਼ਾਂਤ ਝਲਕ।',
+                    'Historic Takhts, Gurdwaras and puratan art.',
+                    'ਇਤਿਹਾਸਕ ਤਖ਼ਤ, ਗੁਰਦੁਆਰਾ ਸਾਹਿਬਾਨ ਅਤੇ ਪੁਰਾਤਨ ਕਲਾ।',
                   )}
                 </p>
               </div>
@@ -3421,15 +3292,14 @@ export default function Home() {
         )}
 
         {activeView === 'summary' && summary && (
-          <div className="mx-auto w-full max-w-3xl px-4 pb-28 pt-8 sm:px-8 md:pb-12">
+          <div className="view-stage mx-auto w-full max-w-3xl px-4 pb-28 pt-8 sm:px-8 xl:pb-12">
             <Panel className="overflow-hidden text-center">
               <div className="summary-top px-6 py-10 text-primary-foreground sm:py-14">
-                <span className="text-4xl" aria-hidden="true">🪯</span>
-                <p className="mt-5 text-sm font-medium tracking-[.15em] text-white/55 uppercase">
+                <span className="mx-auto grid size-12 place-items-center rounded-full border border-white/15 bg-white/10" aria-hidden="true">
+                  <Check className="size-5 text-[color:var(--gold-light)]" />
+                </span>
+                <h1 className="mt-5 font-heading text-3xl font-semibold text-white sm:text-4xl">
                   {tr('Session complete', 'ਸੈਸ਼ਨ ਪੂਰਾ ਹੋਇਆ')}
-                </p>
-                <h1 className="mt-2 font-gurmukhi text-4xl font-semibold text-[color:var(--gold-light)] sm:text-5xl">
-                  ਵਾਹਿਗੁਰੂ
                 </h1>
               </div>
               <div className="grid grid-cols-2 gap-px bg-[color:var(--line)] sm:grid-cols-4">
@@ -3473,11 +3343,11 @@ export default function Home() {
                 <div className="mt-8 grid gap-3 sm:grid-cols-2">
                   <button className="primary-action" onClick={() => setActiveView('jaap')} type="button">
                     <MousePointerClick aria-hidden="true" />
-                    {tr('Continue Jaap', 'ਜਾਪ ਜਾਰੀ ਰੱਖੋ')}
+                    {tr('Continue', 'ਜਾਰੀ ਰੱਖੋ')}
                   </button>
                   <button className="outline-action" onClick={() => setActiveView('focus')} type="button">
                     <Focus aria-hidden="true" />
-                    {tr('Another focus session', 'ਇੱਕ ਹੋਰ ਧਿਆਨ ਸੈਸ਼ਨ')}
+                    {tr('Another session', 'ਇੱਕ ਹੋਰ ਸੈਸ਼ਨ')}
                   </button>
                 </div>
               </div>
@@ -3488,11 +3358,16 @@ export default function Home() {
 
       <nav
         aria-label="Mobile navigation"
-        className="fixed inset-x-3 bottom-[max(.75rem,env(safe-area-inset-bottom))] z-40 grid grid-cols-5 rounded-[24px] border border-white/70 bg-[rgba(251,248,239,.94)] p-2 shadow-[0_15px_45px_rgba(23,50,77,.15)] backdrop-blur-xl md:hidden"
+        className="mobile-navigation fixed inset-x-3 bottom-[max(.75rem,env(safe-area-inset-bottom))] z-40 grid grid-cols-5 rounded-[22px] border border-[color:var(--line)] p-2 backdrop-blur-xl xl:hidden"
       >
         {navItems.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
+            aria-current={
+              activeView === id || (activeView === 'summary' && id === 'jaap')
+                ? 'page'
+                : undefined
+            }
             className={cn(
               'flex min-h-14 flex-col items-center justify-center gap-1 rounded-2xl px-1 text-[11px] font-medium',
               activeView === id || (activeView === 'summary' && id === 'jaap')
@@ -3510,6 +3385,7 @@ export default function Home() {
 
       {notice && (
         <output
+          aria-live="polite"
           className="fixed left-1/2 top-5 z-[80] -translate-x-1/2 rounded-full bg-primary px-5 py-3 text-sm font-medium text-primary-foreground shadow-xl"
         >
           {notice}
@@ -3528,10 +3404,7 @@ export default function Home() {
       <Dialog open={customOpen} onOpenChange={setCustomOpen}>
         <DialogContent className="rounded-[26px] border-[color:var(--line)] bg-card p-6 sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl">{tr('Custom increment', 'ਆਪਣੀ ਗਿਣਤੀ')}</DialogTitle>
-            <DialogDescription>
-              {tr('Add several Jaap at once.', 'ਇੱਕ ਵਾਰ ਵਿੱਚ ਕਈ ਜਾਪ ਜੋੜੋ।')}
-            </DialogDescription>
+            <DialogTitle className="text-xl">{tr('Custom amount', 'ਆਪਣੀ ਗਿਣਤੀ')}</DialogTitle>
           </DialogHeader>
           <label className="mt-2 grid gap-2">
             <span className="field-label">{tr('Amount', 'ਗਿਣਤੀ')}</span>
@@ -3553,7 +3426,7 @@ export default function Home() {
               }}
               type="button"
             >
-              {tr('Add Jaap', 'ਜਾਪ ਜੋੜੋ')}
+              {tr('Add', 'ਜੋੜੋ')}
             </button>
           </DialogFooter>
         </DialogContent>
