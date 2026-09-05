@@ -1664,9 +1664,11 @@ export default function Home() {
 
   if (!account) {
     return (
-      <main className="auth-shell min-h-dvh px-3 py-3 text-foreground sm:px-7 sm:py-7 lg:grid lg:place-items-center">
-        <div className="auth-card mx-auto grid w-full max-w-[1200px] overflow-hidden rounded-[28px] border border-white/55 bg-card shadow-[0_24px_80px_rgba(48,42,24,.13)] lg:min-h-[720px] lg:grid-cols-[1.08fr_.92fr]">
-          <section className="auth-visual relative isolate min-h-[270px] overflow-hidden bg-primary text-white sm:min-h-[360px] lg:min-h-full">
+      <main className="auth-shell spatial-auth-shell min-h-dvh px-3 py-3 text-foreground sm:px-7 sm:py-7 lg:grid lg:place-items-center">
+        <div aria-hidden="true" className="ambient-depth ambient-depth-a" />
+        <div aria-hidden="true" className="ambient-depth ambient-depth-b" />
+        <div className="auth-card auth-3d-stage mx-auto grid w-full max-w-[1200px] overflow-hidden rounded-[38px] lg:min-h-[720px] lg:grid-cols-[1.08fr_.92fr]">
+          <section className="auth-visual auth-visual-depth relative isolate min-h-[270px] overflow-hidden bg-primary text-white sm:min-h-[360px] lg:min-h-full">
             <Image
               alt="Sri Harmandir Sahib reflected in the sarovar"
               className="object-cover"
@@ -1729,7 +1731,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="mb-7 grid grid-cols-2 rounded-2xl bg-secondary p-1">
+            <div className="auth-mode-tabs mb-7 grid grid-cols-2">
               <button
                 className={cn('rounded-xl px-3 py-3 text-sm font-semibold', accountMode === 'login' && 'bg-card shadow-sm')}
                 onClick={() => {
@@ -1803,7 +1805,7 @@ export default function Home() {
               </label>
 
               {accountMode === 'register' && (
-                <label className="flex items-start gap-3 rounded-2xl bg-secondary/65 p-4 text-sm leading-5">
+                <label className="auth-claim-row flex items-start gap-3 p-4 text-sm leading-5">
                   <input
                     checked={claimLocalPractice}
                     className="mt-0.5 size-4 accent-[color:var(--saffron)]"
@@ -2044,16 +2046,18 @@ export default function Home() {
   return (
     <main
       className={cn(
-        'heritage-shell min-h-dvh text-foreground',
+        'heritage-shell spatial-shell min-h-dvh text-foreground',
         settings.simpleMode && 'simple-mode',
       )}
     >
+      <div aria-hidden="true" className="ambient-depth ambient-depth-a" />
+      <div aria-hidden="true" className="ambient-depth ambient-depth-b" />
       <aside
         aria-hidden={!settings.sidebarOpen}
         id="desktop-navigation"
         inert={!settings.sidebarOpen}
         className={cn(
-          'fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col border-r border-[color:var(--line)] bg-[color:var(--sidebar)]/95 px-5 py-7 shadow-[12px_0_40px_rgba(23,50,77,.04)] backdrop-blur-xl transition-[transform,visibility] duration-300 xl:flex',
+          'spatial-sidebar fixed inset-y-0 left-0 z-30 hidden w-[248px] flex-col px-5 py-7 transition-[transform,visibility] duration-500 xl:flex',
           settings.sidebarOpen
             ? 'visible translate-x-0'
             : 'invisible -translate-x-full pointer-events-none',
@@ -2083,7 +2087,7 @@ export default function Home() {
           settings.sidebarOpen ? 'xl:pl-[248px]' : 'xl:pl-0',
         )}
       >
-        <header className="site-header sticky top-0 z-20 flex min-h-[74px] items-center justify-between gap-3 border-b border-transparent px-4 py-3 sm:px-8 lg:px-12">
+        <header className="site-header spatial-header sticky top-0 z-20 flex min-h-[74px] items-center justify-between gap-3 px-4 py-3 sm:px-8 lg:px-12">
           <button
             aria-label={tr('Open navigation', 'ਨੇਵੀਗੇਸ਼ਨ ਖੋਲ੍ਹੋ')}
             className="header-icon-button xl:hidden"
@@ -2191,7 +2195,7 @@ export default function Home() {
 
         {activeView === 'jaap' && (
           <div className="view-stage mx-auto grid w-full max-w-[1200px] gap-7 px-4 pb-28 pt-2 sm:px-8 lg:grid-cols-[minmax(0,1fr)_300px] lg:px-12 lg:pt-5 xl:pb-10">
-            <Panel className="counter-panel relative isolate flex min-h-[calc(100dvh-108px)] flex-col items-center overflow-hidden px-5 pb-7 pt-8 sm:min-h-[690px] sm:px-9 sm:pt-10 lg:min-h-[730px]">
+            <Panel className="counter-panel counter-3d-stage relative isolate flex min-h-[calc(100dvh-108px)] flex-col items-center overflow-hidden px-5 pb-7 pt-8 sm:min-h-[690px] sm:px-9 sm:pt-10 lg:min-h-[730px]">
               <div aria-hidden="true" className="halo" />
               <div className="relative z-10 text-center">
                 <p className="eyebrow">{tr('Today', 'ਅੱਜ')}</p>
@@ -2209,7 +2213,7 @@ export default function Home() {
                   String(todayCount)
                 }
                 className={cn(
-                  'count-button relative z-10 my-auto grid aspect-square w-[min(75vw,370px)] place-items-center rounded-full focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[color:var(--gold)]/45 active:scale-[.985]',
+                  'count-button count-orb-3d relative z-10 my-auto grid aspect-square w-[min(75vw,370px)] place-items-center rounded-full focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[color:var(--gold)]/45 active:scale-[.985]',
                   tapPulse && 'tap-pulse',
                 )}
                 disabled={paused}
@@ -2308,8 +2312,8 @@ export default function Home() {
               </div>
             </Panel>
 
-            <aside className="grid content-start gap-5 lg:pt-5">
-              <Panel className="p-6">
+            <aside className="floating-rail grid content-start gap-5 lg:pt-5">
+              <Panel className="goal-orbit-panel p-6">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-sm text-muted-foreground">
@@ -2331,7 +2335,7 @@ export default function Home() {
 
               <button
                 aria-label={tr('Open focus setup', 'ਧਿਆਨ ਸੈਟਅੱਪ ਖੋਲ੍ਹੋ')}
-                className="group flex min-h-24 items-center justify-between rounded-[26px] bg-primary px-6 text-left text-primary-foreground shadow-[0_18px_38px_rgba(23,50,77,.16)] transition hover:-translate-y-0.5"
+                className="depth-action depth-action-primary group flex min-h-24 items-center justify-between px-6 text-left text-primary-foreground"
                 onClick={() => setActiveView('focus')}
                 type="button"
               >
@@ -2347,7 +2351,7 @@ export default function Home() {
               </button>
 
               <button
-                className="practice-link-card group flex min-h-32 w-full items-center gap-4 rounded-[24px] border border-[color:var(--line)] bg-card p-5 text-left shadow-[0_8px_30px_rgba(40,62,62,.05)]"
+                className="practice-link-card depth-action group flex min-h-32 w-full items-center gap-4 p-5 text-left"
                 onClick={() => setActiveView('sangat')}
                 type="button"
               >
@@ -3358,7 +3362,7 @@ export default function Home() {
 
       <nav
         aria-label="Mobile navigation"
-        className="mobile-navigation fixed inset-x-3 bottom-[max(.75rem,env(safe-area-inset-bottom))] z-40 grid grid-cols-5 rounded-[22px] border border-[color:var(--line)] p-2 backdrop-blur-xl xl:hidden"
+        className="mobile-navigation spatial-dock fixed inset-x-3 bottom-[max(.75rem,env(safe-area-inset-bottom))] z-40 grid grid-cols-5 p-2 backdrop-blur-xl xl:hidden"
       >
         {navItems.map(({ id, label, icon: Icon }) => (
           <button
