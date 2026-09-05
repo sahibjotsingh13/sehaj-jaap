@@ -37,6 +37,7 @@ import {
   Target,
   Trophy,
   UserPlus,
+  UserMinus,
   UserRoundCheck,
   UsersRound,
   Vibrate,
@@ -136,6 +137,9 @@ type GroupMember = {
   privacy: Privacy;
   count?: number;
   practiced: boolean;
+  isYou?: boolean;
+  isOrganizer?: boolean;
+  canRemove?: boolean;
 };
 
 type GroupData = {
@@ -145,6 +149,7 @@ type GroupData = {
   total: number;
   activeMembers: number;
   memberCount: number;
+  canManage?: boolean;
   members: GroupMember[];
 };
 
@@ -563,6 +568,7 @@ export default function Home() {
   const [privacy, setPrivacy] = useState<Privacy>('exact');
   const [shareFeedback, setShareFeedback] = useState('');
   const [syncing, setSyncing] = useState(false);
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
 
   const pulseTimer = useRef<number | null>(null);
   const finishingFocus = useRef(false);
@@ -987,14 +993,72 @@ export default function Home() {
       const payload = await readApiJson<{
         group?: GroupData;
         error?: string;
+        removed?: boolean;
       }>(response);
       if (!response.ok || !payload.group) {
+        if (payload.removed) {
+          setMembership(null);
+          setGroupData(null);
+          setGroupQueue([]);
+        }
         throw new Error(payload.error || 'Could not load this Sangat.');
       }
       setGroupData(payload.group);
       return payload.group;
     },
     [today],
+  );
+
+  const removeSangatMember = useCallback(
+    async (member: GroupMember) => {
+      const currentMembership = membershipRef.current;
+      if (!currentMembership || !member.canRemove || removingMemberId) return;
+
+      const confirmed = window.confirm(
+        tr(
+          `Remove ${member.name} from this Sangat? They will no longer be able to rejoin with the current invite.`,
+          `${member.name} ਨੂੰ ਇਸ ਸੰਗਤ ਤੋਂ ਹਟਾਉਣਾ ਹੈ? ਉਹ ਮੌਜੂਦਾ ਸੱਦੇ ਨਾਲ ਮੁੜ ਸ਼ਾਮਲ ਨਹੀਂ ਹੋ ਸਕਣਗੇ।`,
+        ),
+      );
+      if (!confirmed) return;
+
+      setRemovingMemberId(member.id);
+      setGroupError('');
+      try {
+        const response = await fetch('/api/sangat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'remove_member',
+            code: currentMembership.code,
+            memberId: member.id,
+            practiceDate: today,
+          }),
+        });
+        const payload = await readApiJson<{
+          removed?: boolean;
+          group?: GroupData;
+          error?: string;
+        }>(response);
+        if (!response.ok || !payload.removed) {
+          throw new Error(payload.error || 'Could not remove this member.');
+        }
+        if (payload.group) setGroupData(payload.group);
+        setNotice(
+          tr(
+            `${member.name} was removed from the Sangat.`,
+            `${member.name} ਨੂੰ ਸੰਗਤ ਤੋਂ ਹਟਾ ਦਿੱਤਾ ਗਿਆ ਹੈ।`,
+          ),
+        );
+      } catch (error) {
+        setGroupError(
+          error instanceof Error ? error.message : 'Could not remove this member.',
+        );
+      } finally {
+        setRemovingMemberId(null);
+      }
+    },
+    [removingMemberId, today, tr],
   );
 
   const flushGroup = useCallback(async () => {
@@ -2883,29 +2947,77 @@ export default function Home() {
                         {groupData?.memberCount ?? 1}
                       </span>
                     </div>
+                    {groupData?.canManage && (
+                      <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                        {tr(
+                          'You created this Sangat. You can remove other members from the group.',
+                          'ਤੁਸੀਂ ਇਹ ਸੰਗਤ ਬਣਾਈ ਹੈ। ਤੁਸੀਂ ਹੋਰ ਮੈਂਬਰਾਂ ਨੂੰ ਸੰਗਤ ਤੋਂ ਹਟਾ ਸਕਦੇ ਹੋ।',
+                        )}
+                      </p>
+                    )}
                     <div className="mt-6 grid gap-2">
                       {(groupData?.members ?? []).map((member) => (
                         <div
                           key={member.id}
-                          className="flex min-h-14 items-center gap-3 rounded-2xl bg-secondary/70 px-4"
+                          className="sangat-member-row flex min-h-16 items-center gap-3 rounded-2xl bg-secondary/70 px-4"
                         >
-                          <span className="grid size-9 place-items-center rounded-full bg-card text-sm font-semibold text-primary">
+                          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-card text-sm font-semibold text-primary">
                             {member.name.charAt(0).toUpperCase()}
                           </span>
-                          <span className="min-w-0 flex-1 truncate text-sm font-medium">
-                            {member.name}
+                          <span className="min-w-0 flex-1">
+                            <span className="flex min-w-0 items-center gap-2">
+                              <span className="truncate text-sm font-medium">
+                                {member.name}
+                              </span>
+                              {member.isOrganizer && (
+                                <span className="sangat-role-badge">
+                                  {tr('Organizer', 'ਪ੍ਰਬੰਧਕ')}
+                                </span>
+                              )}
+                              {member.isYou && !member.isOrganizer && (
+                                <span className="sangat-role-badge">
+                                  {tr('You', 'ਤੁਸੀਂ')}
+                                </span>
+                              )}
+                            </span>
                           </span>
-                          {member.privacy === 'exact' ? (
-                            <span className="text-sm font-semibold tabular-nums">
-                              {formatNumber(member.count ?? 0)}
-                            </span>
-                          ) : member.practiced ? (
-                            <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <UserRoundCheck aria-hidden="true" className="size-4" />
-                              {tr('Practised', 'ਅਭਿਆਸ ਕੀਤਾ')}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-muted-foreground">—</span>
+                          <span className="shrink-0">
+                            {member.privacy === 'private' ? (
+                              <span className="text-xs text-muted-foreground">
+                                {tr('Private', 'ਨਿੱਜੀ')}
+                              </span>
+                            ) : member.privacy === 'exact' ? (
+                              <span className="text-sm font-semibold tabular-nums">
+                                {formatNumber(member.count ?? 0)}
+                              </span>
+                            ) : member.practiced ? (
+                              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <UserRoundCheck aria-hidden="true" className="size-4" />
+                                {tr('Practised', 'ਅਭਿਆਸ ਕੀਤਾ')}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">—</span>
+                            )}
+                          </span>
+                          {member.canRemove && (
+                            <button
+                              aria-label={tr(
+                                `Remove ${member.name}`,
+                                `${member.name} ਨੂੰ ਹਟਾਓ`,
+                              )}
+                              className="sangat-remove-button"
+                              disabled={Boolean(removingMemberId)}
+                              onClick={() => void removeSangatMember(member)}
+                              title={tr('Remove member', 'ਮੈਂਬਰ ਹਟਾਓ')}
+                              type="button"
+                            >
+                              <UserMinus aria-hidden="true" className="size-4" />
+                              <span className="hidden sm:inline">
+                                {removingMemberId === member.id
+                                  ? tr('Removing…', 'ਹਟਾਇਆ ਜਾ ਰਿਹਾ…')
+                                  : tr('Remove', 'ਹਟਾਓ')}
+                              </span>
+                            </button>
                           )}
                         </div>
                       ))}
