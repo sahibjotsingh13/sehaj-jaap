@@ -40,9 +40,7 @@ export function SmoothEffects() {
       });
     };
 
-    const revealNodes = Array.from(
-      document.querySelectorAll<HTMLElement>('[data-reveal]'),
-    );
+    const observed = new WeakSet<Element>();
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
@@ -58,13 +56,37 @@ export function SmoothEffects() {
       },
     );
 
-    revealNodes.forEach((node) => observer.observe(node));
-    updateScroll();
+    const observeReveals = (rootNode: ParentNode = document) => {
+      rootNode.querySelectorAll<HTMLElement>('[data-reveal]').forEach((node) => {
+        if (!observed.has(node)) {
+          observed.add(node);
+          observer.observe(node);
+        }
+      });
+    };
 
+    observeReveals();
+    const mutationObserver = new MutationObserver((records) => {
+      for (const record of records) {
+        record.addedNodes.forEach((node) => {
+          if (node instanceof HTMLElement) {
+            if (node.matches('[data-reveal]') && !observed.has(node)) {
+              observed.add(node);
+              observer.observe(node);
+            }
+            observeReveals(node);
+          }
+        });
+      }
+    });
+    mutationObserver.observe(document.body, { childList: true, subtree: true });
+
+    updateScroll();
     window.addEventListener('scroll', updateScroll, { passive: true });
     window.addEventListener('pointermove', updatePointer, { passive: true });
 
     return () => {
+      mutationObserver.disconnect();
       observer.disconnect();
       window.removeEventListener('scroll', updateScroll);
       window.removeEventListener('pointermove', updatePointer);
