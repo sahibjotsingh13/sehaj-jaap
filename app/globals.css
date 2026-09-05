@@ -4054,3 +4054,70 @@ a,
     contain-intrinsic-size: 560px;
   }
 }
+
+
+/* Scroll-aware navigation polish */
+
+:root {
+  --scroll-velocity: 0;
+}
+
+html[data-scroll-state='top'] .spatial-header {
+  transform: translateY(0) scale(1);
+  background: rgba(251,248,239,.6);
+  box-shadow:
+    0 16px 42px rgba(31,59,61,.055),
+    inset 0 1px 0 rgba(255,255,255,.82);
+}
+
+html[data-scroll-state='scrolled'] .spatial-header {
+  transform: translateY(-1px) scale(.992);
+  background: rgba(251,248,239,.82);
+  box-shadow:
+    0 18px 52px rgba(31,59,61,.09),
+    inset 0 1px 0 rgba(255,255,255,.86);
+}
+
+html[data-scroll-state='scrolled'] .brand-logo-shell {
+  transform: scale(.94);
+}
+
+.brand-logo-shell {
+  transition: transform 420ms var(--ease-premium);
+}
+
+.spatial-header {
+  transition:
+    transform 420ms var(--ease-premium),
+    background-color 340ms ease,
+    box-shadow 340ms ease;
+}
+
+.desktop-nav-link[aria-current='page'] {
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.28);
+}
+
+/* Let velocity add almost imperceptible physical response to hero media. */
+.motion-enhanced .counter-cinematic-photo {
+  translate: 0 calc(var(--scroll-velocity) * -2px);
+}
+
+.motion-enhanced .heritage-hero-image,
+.motion-enhanced .home-film-link-image,
+.motion-enhanced .sangat-hero-image {
+  translate: 0 calc(var(--scroll-velocity) * -1.5px);
+}
+
+@media (max-width: 767px) {
+  html[data-scroll-state='scrolled'] .spatial-header {
+    transform: translateY(-1px) scale(.996);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-scroll-state='scrolled'] .spatial-header,
+  html[data-scroll-state='top'] .spatial-header,
+  .brand-logo-shell {
+    transform: none !important;
+  }
+}
