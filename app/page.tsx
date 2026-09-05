@@ -1632,15 +1632,12 @@ export default function Home() {
         <div aria-hidden="true" className="ambient-depth ambient-depth-b" />
         <div className="auth-card auth-3d-stage mx-auto grid w-full max-w-[1200px] overflow-hidden rounded-[38px] lg:min-h-[720px] lg:grid-cols-[1.08fr_.92fr]">
           <section className="auth-visual auth-visual-depth relative isolate min-h-[270px] overflow-hidden bg-primary text-white sm:min-h-[360px] lg:min-h-full">
-            <Image
-              alt="Illuminated gurdwara complex at night"
-              className="object-cover"
-              fill
-              priority
-              quality={94}
-              sizes="(max-width: 1024px) 100vw, 55vw"
-              src="/golden-temple.jpg"
-              style={{ objectPosition: 'center 48%' }}
+            <img
+              alt="Takht Sri Hazur Sahib courtyard"
+              className="absolute inset-0 size-full object-cover"
+              decoding="async"
+              src="https://upload.wikimedia.org/wikipedia/commons/5/59/Gurudwara_shri_sachkhand_hazur_sahib_-_panoramio_%282%29.jpg"
+              style={{ objectPosition: 'center 46%' }}
             />
             <div className="auth-visual-overlay absolute inset-0" />
             <div className="relative z-10 flex min-h-[inherit] flex-col p-6 sm:p-9 lg:min-h-full lg:p-12">
