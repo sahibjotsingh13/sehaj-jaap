@@ -2434,8 +2434,31 @@ export default function Home() {
         )}
 
         {activeView === 'focus' && (
-          <div className="view-stage mx-auto w-full max-w-[920px] px-4 pb-28 pt-3 sm:px-8 lg:px-12 xl:pb-12">
-            <Panel className="p-6 sm:p-8 lg:p-10">
+          <div className="view-stage focus-setup-story mx-auto w-full max-w-[1120px] px-4 pb-28 pt-3 sm:px-8 lg:px-12 xl:pb-16">
+            <section className="focus-setup-hero">
+              <div className="focus-setup-hero-media" aria-hidden="true">
+                <Image
+                  alt=""
+                  className="object-cover"
+                  fill
+                  priority
+                  sizes="(max-width: 1120px) 100vw, 1120px"
+                  src="/heritage-user-02.webp"
+                />
+                <span className="focus-setup-hero-wash" />
+              </div>
+              <div className="focus-setup-hero-copy">
+                <p className="eyebrow">{tr('Focus', 'ਧਿਆਨ')}</p>
+                <h1>{tr('Make space for one intention.', 'ਇੱਕ ਸੰਕਲਪ ਲਈ ਥਾਂ ਬਣਾਓ।')}</h1>
+                <p>
+                  {tr(
+                    'Choose time, target or pace. The controls stay secondary so the session itself remains the centre of attention.',
+                    'ਸਮਾਂ, ਟੀਚਾ ਜਾਂ ਰਫ਼ਤਾਰ ਚੁਣੋ। ਕੰਟਰੋਲ ਦੂਜੇ ਪੱਧਰ ਤੇ ਰਹਿੰਦੇ ਹਨ ਤਾਂ ਜੋ ਸੈਸ਼ਨ ਖੁਦ ਧਿਆਨ ਦਾ ਕੇਂਦਰ ਰਹੇ।',
+                  )}
+                </p>
+              </div>
+            </section>
+            <Panel className="focus-setup-panel p-6 sm:p-8 lg:p-10">
               <div className="mb-8">
                 <p className="max-w-xl text-[15px] leading-6 text-muted-foreground">
                   {tr(
@@ -2616,7 +2639,30 @@ export default function Home() {
         )}
 
         {activeView === 'sangat' && (
-          <div className="view-stage mx-auto w-full max-w-[1120px] px-4 pb-28 pt-3 sm:px-8 lg:px-12 xl:pb-12">
+          <div className="view-stage sangat-experience mx-auto w-full max-w-[1180px] px-4 pb-28 pt-3 sm:px-8 lg:px-12 xl:pb-16">
+            <section className="sangat-hero-scroll">
+              <video
+                autoPlay
+                loop
+                muted
+                playsInline
+                poster="/heritage-user-03.webp"
+                preload="metadata"
+              >
+                <source src="/heritage-motion-01.webm" type="video/webm" />
+              </video>
+              <span className="sangat-hero-scrim" aria-hidden="true" />
+              <div className="sangat-hero-copy">
+                <p className="eyebrow text-white/65">{tr('Sangat', 'ਸੰਗਤ')}</p>
+                <h1>{tr('Practice feels different together.', 'ਮਿਲ ਕੇ ਅਭਿਆਸ ਦਾ ਅਨੁਭਵ ਵੱਖਰਾ ਹੁੰਦਾ ਹੈ।')}</h1>
+                <p>
+                  {tr(
+                    'A private shared intention, designed with less interface and more room for presence.',
+                    'ਇੱਕ ਨਿੱਜੀ ਸਾਂਝਾ ਸੰਕਲਪ — ਘੱਟ ਇੰਟਰਫੇਸ ਅਤੇ ਹਾਜ਼ਰੀ ਲਈ ਵੱਧ ਥਾਂ ਨਾਲ।',
+                  )}
+                </p>
+              </div>
+            </section>
             {!membership ? (
               <div className="grid gap-6 lg:grid-cols-[.9fr_1.1fr]">
                 <Panel className="sangat-intro flex min-h-[300px] flex-col justify-end overflow-hidden p-7 text-primary-foreground sm:p-9 lg:min-h-[560px]">
@@ -2893,7 +2939,43 @@ export default function Home() {
         )}
 
         {activeView === 'progress' && (
-          <div className="view-stage mx-auto w-full max-w-[1120px] px-4 pb-28 pt-3 sm:px-8 lg:px-12 xl:pb-12">
+          <div className="view-stage progress-story mx-auto w-full max-w-[1180px] px-4 pb-28 pt-3 sm:px-8 lg:px-12 xl:pb-16">
+            <section className="progress-story-hero">
+              <div>
+                <p className="eyebrow">{tr('Your journey', 'ਤੁਹਾਡੀ ਯਾਤਰਾ')}</p>
+                <h1>{tr('Consistency, made visible.', 'ਨਿਰੰਤਰਤਾ, ਹੁਣ ਦਿੱਖ ਵਿੱਚ।')}</h1>
+                <p>
+                  {tr(
+                    'Progress is presented as a timeline and rhythm rather than a dashboard of isolated numbers.',
+                    'ਪ੍ਰਗਤੀ ਨੂੰ ਵੱਖ-ਵੱਖ ਅੰਕਾਂ ਵਾਲੇ ਡੈਸ਼ਬੋਰਡ ਦੀ ਥਾਂ ਇੱਕ ਟਾਈਮਲਾਈਨ ਅਤੇ ਲਯ ਵਜੋਂ ਪੇਸ਼ ਕੀਤਾ ਗਿਆ ਹੈ।',
+                  )}
+                </p>
+              </div>
+              <div className="progress-story-number">
+                <strong>{formatNumber(weekTotal)}</strong>
+                <span>{tr('Jaap this week', 'ਇਸ ਹਫ਼ਤੇ ਜਾਪ')}</span>
+              </div>
+            </section>
+
+            <div className="progress-week-timeline">
+              {recentDays.map((day) => (
+                <button
+                  key={day.key}
+                  className={cn(
+                    'progress-day',
+                    day.key === today && 'progress-day-today',
+                    day.record.jaap >= settings.streakMinimum && 'progress-day-complete',
+                  )}
+                  onClick={() => setSelectedDay(day.key)}
+                  type="button"
+                >
+                  <span>{day.label}</span>
+                  <strong>{formatNumber(day.record.jaap)}</strong>
+                  <i aria-hidden="true" />
+                </button>
+              ))}
+            </div>
+
             <div className="metric-ribbon grid gap-0 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 { label: tr('This week', 'ਇਸ ਹਫ਼ਤੇ'), value: formatNumber(weekTotal), icon: MousePointerClick },
@@ -3253,8 +3335,18 @@ export default function Home() {
         )}
 
         {activeView === 'summary' && summary && (
-          <div className="view-stage mx-auto w-full max-w-3xl px-4 pb-28 pt-8 sm:px-8 xl:pb-12">
-            <Panel className="overflow-hidden text-center">
+          <div className="view-stage summary-experience mx-auto w-full max-w-[980px] px-4 pb-28 pt-8 sm:px-8 xl:pb-16">
+            <Panel className="summary-cinematic overflow-hidden text-center">
+              <div className="summary-cinematic-media" aria-hidden="true">
+                <Image
+                  alt=""
+                  className="object-cover"
+                  fill
+                  sizes="(max-width: 980px) 100vw, 980px"
+                  src="/heritage-user-01.webp"
+                />
+                <span />
+              </div>
               <div className="summary-top px-6 py-10 text-primary-foreground sm:py-14">
                 <span className="mx-auto grid size-12 place-items-center rounded-full border border-white/15 bg-white/10" aria-hidden="true">
                   <Check className="size-5 text-[color:var(--gold-light)]" />
