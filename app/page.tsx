@@ -153,6 +153,14 @@ type GroupData = {
   members: GroupMember[];
 };
 
+function visibleSangatMembers(group: GroupData | null) {
+  if (!group) return [];
+  return group.members.filter(
+    (member) =>
+      !/^guest(?:[\s#_-]*\d*)?$/i.test(member.name.trim()),
+  );
+}
+
 type IncrementAction = {
   amount: number;
   groupCode?: string;
@@ -2944,7 +2952,7 @@ export default function Home() {
                     <div className="flex items-center justify-between">
                       <h2 className="text-xl font-semibold">{tr('Members', 'ਮੈਂਬਰ')}</h2>
                       <span className="text-sm text-muted-foreground tabular-nums">
-                        {groupData?.memberCount ?? 1}
+                        {groupData ? visibleSangatMembers(groupData).length : 1}
                       </span>
                     </div>
                     {groupData?.canManage && (
@@ -2956,7 +2964,7 @@ export default function Home() {
                       </p>
                     )}
                     <div className="mt-6 grid gap-2">
-                      {(groupData?.members ?? []).map((member) => (
+                      {visibleSangatMembers(groupData).map((member) => (
                         <div
                           key={member.id}
                           className="sangat-member-row flex min-h-16 items-center gap-3 rounded-2xl bg-secondary/70 px-4"
@@ -3021,7 +3029,7 @@ export default function Home() {
                           )}
                         </div>
                       ))}
-                      {!groupData?.members.length && (
+                      {!visibleSangatMembers(groupData).length && (
                         <p className="py-8 text-center text-sm text-muted-foreground">
                           {tr('Share the link to welcome your first member.', 'ਪਹਿਲੇ ਮੈਂਬਰ ਨੂੰ ਸੱਦਾ ਦੇਣ ਲਈ ਲਿੰਕ ਸਾਂਝਾ ਕਰੋ।')}
                         </p>
