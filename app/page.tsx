@@ -2207,6 +2207,17 @@ export default function Home() {
         settings.simpleMode && 'simple-mode',
       )}
     >
+      <div aria-hidden="true" className="site-fixed-backdrop">
+        <Image
+          alt=""
+          className="site-fixed-backdrop-image"
+          fill
+          priority
+          sizes="100vw"
+          src="/harmandir-sahib-static-background.jpg"
+        />
+        <span className="site-fixed-backdrop-wash" />
+      </div>
       <div aria-hidden="true" className="ambient-depth ambient-depth-a" />
       <div aria-hidden="true" className="ambient-depth ambient-depth-b" />
       <aside
