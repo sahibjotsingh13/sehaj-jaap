@@ -163,6 +163,73 @@ export function HeritageExperience({ locale }: { locale: Locale }) {
           ))}
         </div>
       </section>
+
+      <section className="heritage-legacy" data-reveal>
+        <div className="heritage-archive-heading">
+          <p className="eyebrow">{copy(locale, 'Heritage collection', 'ਵਿਰਾਸਤੀ ਸੰਗ੍ਰਹਿ')}</p>
+          <h2>{copy(locale, 'Sacred places and preserved memory.', 'ਪਵਿੱਤਰ ਅਸਥਾਨ ਅਤੇ ਸੰਭਾਲੀ ਹੋਈ ਯਾਦ।')}</h2>
+        </div>
+        <div className="heritage-legacy-grid">
+          {[
+            {
+              src: '/golden-temple.jpg',
+              width: 1600,
+              height: 1200,
+              title: copy(locale, 'Sri Harmandir Sahib', 'ਸ੍ਰੀ ਹਰਿਮੰਦਰ ਸਾਹਿਬ'),
+              alt: 'Sri Harmandir Sahib reflected in the sarovar',
+            },
+            {
+              src: '/hazur-sahib.jpg',
+              width: 1920,
+              height: 1440,
+              title: copy(locale, 'Takht Sri Hazur Sahib', 'ਤਖ਼ਤ ਸ੍ਰੀ ਹਜ਼ੂਰ ਸਾਹਿਬ'),
+              alt: 'Takht Sri Hazur Sahib beyond the fountains at Nanded',
+            },
+            {
+              src: '/kesgarh-sahib.jpg',
+              width: 1920,
+              height: 1440,
+              title: copy(locale, 'Takht Sri Kesgarh Sahib', 'ਤਖ਼ਤ ਸ੍ਰੀ ਕੇਸਗੜ੍ਹ ਸਾਹਿਬ'),
+              alt: 'Takht Sri Kesgarh Sahib at Anandpur Sahib',
+            },
+            {
+              src: '/guru-nanak-historic.jpg',
+              width: 1200,
+              height: 1541,
+              title: copy(locale, 'Puratan Sikh art', 'ਪੁਰਾਤਨ ਸਿੱਖ ਕਲਾ'),
+              alt: 'Historic painting of Guru Nanak Sahib with companions',
+            },
+            {
+              src: '/ten-gurus-puratan.jpg',
+              width: 887,
+              height: 1172,
+              title: copy(locale, 'A heritage painting', 'ਇੱਕ ਵਿਰਾਸਤੀ ਚਿੱਤਰ'),
+              alt: 'Puratan painting of the Sikh Gurus gathered in sangat',
+            },
+            {
+              src: '/mata-sahib-deva-hukamnama.jpg',
+              width: 479,
+              height: 767,
+              title: copy(locale, 'Historic hukamnama', 'ਇਤਿਹਾਸਕ ਹੁਕਮਨਾਮਾ'),
+              alt: 'Historic handwritten hukamnama connected with Mata Sahib Devan Ji',
+            },
+          ].map(({ src, width, height, title, alt }) => (
+            <figure className="heritage-legacy-card" key={src}>
+              <div className="heritage-legacy-image">
+                <Image
+                  alt={alt}
+                  className="heritage-legacy-photo"
+                  width={width}
+                  height={height}
+                  sizes="(max-width: 600px) 92vw, (max-width: 980px) 46vw, 31vw"
+                  src={src}
+                />
+              </div>
+              <figcaption>{title}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

@@ -2639,20 +2639,7 @@ export default function Home() {
 
         {activeView === 'focus' && (
           <div className="view-stage focus-setup-story mx-auto w-full max-w-[1120px] px-4 pb-28 pt-3 sm:px-8 lg:px-12 xl:pb-16">
-            <section className="focus-setup-hero" data-reveal>
-              <div className="focus-setup-hero-media" aria-hidden="true">
-                <Image
-                  alt=""
-                  className="object-cover"
-                  fill
-                  priority
-                  quality={94}
-                  sizes="(max-width: 1120px) 100vw, 1120px"
-                  src="/media/sangat/gurbani-pages.jpg"
-                  style={{ objectPosition: 'center 43%' }}
-                />
-                <span className="focus-setup-hero-wash" />
-              </div>
+            <section className="focus-setup-hero focus-setup-respect" data-reveal>
               <div className="focus-setup-hero-copy">
                 <p className="eyebrow">{tr('Focus', 'ਧਿਆਨ')}</p>
                 <h1>{tr('Make space for one intention.', 'ਇੱਕ ਸੰਕਲਪ ਲਈ ਥਾਂ ਬਣਾਓ।')}</h1>
@@ -2663,6 +2650,18 @@ export default function Home() {
                   )}
                 </p>
               </div>
+              <figure className="focus-setup-hero-media focus-setup-respect-media">
+                <Image
+                  alt="A respectful view of the open Guru Granth Sahib Ji"
+                  className="focus-setup-respect-image"
+                  width={2048}
+                  height={1269}
+                  priority
+                  quality={94}
+                  sizes="(max-width: 800px) 100vw, 62vw"
+                  src="/media/sangat/gurbani-pages.jpg"
+                />
+              </figure>
             </section>
             <Panel data-reveal className="focus-setup-panel p-6 sm:p-8 lg:p-10">
               <div className="mb-8">

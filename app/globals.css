@@ -4274,7 +4274,6 @@ html[data-scroll-state='scrolled'] .brand-logo-shell {
   .sangat-hero-scrim { display: none; }
 }
 
-
 /* Sangat member management */
 .sangat-member-row {
   transition:
@@ -4346,5 +4345,118 @@ html[data-scroll-state='scrolled'] .brand-logo-shell {
   .sangat-remove-button {
     width: 36px;
     padding: 0;
+  }
+}
+
+/* Keep sacred scripture photography free of overlaid interface copy. */
+.focus-setup-respect {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.78fr) minmax(0, 1.22fr);
+  align-items: stretch;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--card);
+}
+
+.focus-setup-respect .focus-setup-hero-copy {
+  position: relative;
+  inset: auto;
+  z-index: 1;
+  align-self: center;
+  max-width: none;
+  padding: clamp(1.75rem, 4vw, 4rem);
+}
+
+.focus-setup-respect .focus-setup-hero-copy h1 {
+  font-size: clamp(2.45rem, 4.2vw, 4.35rem);
+}
+
+.focus-setup-respect .focus-setup-hero-media {
+  position: relative;
+  inset: auto;
+  display: grid;
+  min-width: 0;
+  margin: 0;
+  place-items: center;
+  background: #241311;
+}
+
+.focus-setup-respect-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  transform: none !important;
+  filter: none !important;
+  animation: none !important;
+}
+
+.heritage-legacy {
+  padding-top: clamp(5rem, 10vw, 9rem);
+}
+
+.heritage-legacy-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+  align-items: start;
+  margin-top: clamp(2rem, 5vw, 4rem);
+}
+
+.heritage-legacy-card {
+  min-width: 0;
+  margin: 0;
+}
+
+.heritage-legacy-image {
+  overflow: hidden;
+  border: 1px solid rgba(170, 124, 43, 0.2);
+  border: 1px solid color-mix(in srgb, var(--gold) 20%, transparent);
+  border-radius: 22px;
+  background: #eee6d5;
+  box-shadow: 0 24px 55px rgba(55, 42, 17, 0.12);
+}
+
+.heritage-legacy-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  transform: none !important;
+  filter: none !important;
+  animation: none !important;
+}
+
+.heritage-legacy-card figcaption {
+  padding: 0.9rem 0.25rem 0;
+  color: var(--foreground);
+  font-family: var(--font-heading, Georgia, serif);
+  font-size: clamp(1.05rem, 1.8vw, 1.35rem);
+  line-height: 1.25;
+}
+
+@media (max-width: 900px) {
+  .heritage-legacy-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 800px) {
+  .focus-setup-respect {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .focus-setup-respect .focus-setup-hero-media {
+    order: 1;
+  }
+
+  .focus-setup-respect .focus-setup-hero-copy {
+    order: 2;
+  }
+}
+
+@media (max-width: 600px) {
+  .heritage-legacy-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
