@@ -9,6 +9,8 @@ const USERNAME_LIMIT = 24;
 const SESSION_COOKIE = 'sehaj_session';
 const SESSION_LIFETIME_SECONDS = 60 * 60 * 24 * 30;
 const PASSWORD_ITERATIONS = 600_000;
+const ACCOUNT_UPSTREAM =
+  'https://vzkmcodmfxegxzsackfv.supabase.co/functions/v1/sehaj-account';
 
 type Privacy = 'exact' | 'practiced' | 'private';
 
@@ -239,6 +241,43 @@ async function proxySangat(request: Request) {
   });
   const contentType = request.headers.get('content-type');
   if (contentType) headers.set('Content-Type', contentType);
+
+  const accountToken = request.headers.get('x-sehaj-account-token')?.trim();
+  if (accountToken) {
+    try {
+      const accountResponse = await fetch(ACCOUNT_UPSTREAM, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ action: 'session', token: accountToken }),
+        cache: 'no-store',
+        redirect: 'manual',
+      });
+      const accountBody = (await accountResponse.json()) as {
+        account?: Account;
+        error?: string;
+      };
+      if (!accountResponse.ok || !accountBody.account) {
+        return json(
+          {
+            error:
+              accountBody.error || 'Please sign in again to continue with Sangat.',
+          },
+          accountResponse.status === 401 ? 401 : 503,
+        );
+      }
+      headers.set('X-Sehaj-Account-Id', accountBody.account.id);
+      headers.set('X-Sehaj-Account-Username', accountBody.account.username);
+      headers.set(
+        'X-Sehaj-Account-Name',
+        encodeURIComponent(accountBody.account.displayName),
+      );
+    } catch {
+      return json({ error: 'Account service is temporarily unavailable.' }, 503);
+    }
+  }
   const session = cookieValue(request, SESSION_COOKIE);
   if (session) {
     headers.set('Cookie', `${SESSION_COOKIE}=${encodeURIComponent(session)}`);
@@ -396,6 +435,53 @@ function validPostOrigin(request: Request) {
 }
 
 async function authenticatedAccount(request: Request): Promise<Account | null> {
+  if (request.headers.has('oai-sites-authorization')) {
+    const id = request.headers.get('x-sehaj-account-id')?.trim() || '';
+    const username = cleanUsername(
+      request.headers.get('x-sehaj-account-username'),
+    );
+    let displayName = '';
+    try {
+      displayName = cleanText(
+        decodeURIComponent(request.headers.get('x-sehaj-account-name') || ''),
+        NAME_LIMIT,
+      );
+    } catch {
+      displayName = '';
+    }
+    if (/^[0-9a-f-]{36}$/i.test(id) && username.length >= 3 && displayName.length >= 2) {
+      await ensureAuthSchema();
+      const db = getDb();
+      const existing = await db
+        .prepare(
+          `SELECT id, username, display_name AS displayName
+           FROM accounts
+           WHERE id = ? OR username = ?
+           ORDER BY CASE WHEN id = ? THEN 0 ELSE 1 END
+           LIMIT 1`,
+        )
+        .bind(id, username, id)
+        .first<Account>();
+      if (existing) {
+        await db
+          .prepare('UPDATE accounts SET display_name = ? WHERE id = ?')
+          .bind(displayName, existing.id)
+          .run();
+        return { ...existing, displayName };
+      }
+      await db
+        .prepare(
+          `INSERT INTO accounts
+             (id, username, display_name, password_hash, password_salt,
+              password_iterations, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        )
+        .bind(id, username, displayName, 'external-account', '', 1, Date.now())
+        .run();
+      return { id, username, displayName };
+    }
+  }
+
   const token = cookieValue(request, SESSION_COOKIE);
   if (!token) return null;
   await ensureAuthSchema();

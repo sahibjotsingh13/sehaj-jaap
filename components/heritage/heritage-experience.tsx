@@ -57,8 +57,8 @@ export function HeritageExperience({ locale }: { locale: Locale }) {
           <Image
             alt="Golden dome and illuminated marble facade of Takht Sri Hazur Sahib at night"
             className="supplied-gallery-image"
-            width={960}
-            height={1280}
+            width={914}
+            height={1018}
             priority
             sizes="(max-width: 700px) 92vw, 650px"
             src="/media/sangat/hazur-golden-dome.jpeg"
@@ -83,19 +83,19 @@ export function HeritageExperience({ locale }: { locale: Locale }) {
           body={copy(locale, 'Golden domes rise above the red and cream facade in Delhi.', 'ਦਿੱਲੀ ਵਿਖੇ ਲਾਲ ਅਤੇ ਕਰੀਮ ਰੰਗ ਦੇ ਮੁੱਖ ਦਰਵਾਜ਼ੇ ਉੱਪਰ ਸੁਨਹਿਰੀ ਗੁੰਬਦ।')}
           label={copy(locale, 'Delhi', 'ਦਿੱਲੀ')}
           src="/media/sangat/sis-ganj-sahib.jpg"
-          width={2601}
-          height={1960}
+          width={3888}
+          height={2592}
           title={copy(locale, 'Gurdwara Sis Ganj Sahib', 'ਗੁਰਦੁਆਰਾ ਸੀਸ ਗੰਜ ਸਾਹਿਬ')}
         />
         <HeritageFrame
           align="right"
-          alt="Sangat arriving beneath the illuminated dome of Takht Sri Hazur Sahib"
-          body={copy(locale, 'An evening view of Takht Sri Hazur Sahib, Nanded.', 'ਨੰਦੇੜ ਵਿਖੇ ਤਖ਼ਤ ਸ੍ਰੀ ਹਜ਼ੂਰ ਸਾਹਿਬ ਦਾ ਸ਼ਾਮ ਦਾ ਦ੍ਰਿਸ਼।')}
+          alt="Archival photograph of Takht Sri Hazur Sahib in Nanded from 1909"
+          body={copy(locale, 'An archival view of Takht Sri Hazur Sahib published in 1909.', '1909 ਵਿੱਚ ਪ੍ਰਕਾਸ਼ਿਤ ਤਖ਼ਤ ਸ੍ਰੀ ਹਜ਼ੂਰ ਸਾਹਿਬ ਦਾ ਪੁਰਾਤਨ ਦ੍ਰਿਸ਼।')}
           label={copy(locale, 'Nanded', 'ਨੰਦੇੜ')}
           src="/media/sangat/hazur-night-darshan.jpeg"
-          width={960}
-          height={1280}
-          title={copy(locale, 'Takht Sri Hazur Sahib', 'ਤਖ਼ਤ ਸ੍ਰੀ ਹਜ਼ੂਰ ਸਾਹਿਬ')}
+          width={826}
+          height={1238}
+          title={copy(locale, 'A historic view of Hazur Sahib', 'ਹਜ਼ੂਰ ਸਾਹਿਬ ਦਾ ਪੁਰਾਤਨ ਦ੍ਰਿਸ਼')}
         />
         <HeritageFrame
           alt="Traditional Sikh portrait with a gold turban, green robes and a manuscript"
@@ -149,8 +149,8 @@ export function HeritageExperience({ locale }: { locale: Locale }) {
                 <Image
                   alt={alt}
                   className="supplied-gallery-image"
-                  width={960}
-                  height={1280}
+                  width={3024}
+                  height={4032}
                   sizes="(max-width: 700px) 92vw, 46vw"
                   src={src}
                 />

@@ -23,13 +23,10 @@ import {
   LogOut,
   Menu,
   MousePointerClick,
-  PanelLeftClose,
-  PanelLeftOpen,
   Pause,
   Play,
   RotateCcw,
   Save,
-  Settings2,
   Share2,
   ShieldCheck,
   SlidersHorizontal,
@@ -46,8 +43,9 @@ import {
   WifiOff,
 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
-import { BrandMark, SehajBrand } from '@/components/brand/sehaj-brand';
+import { SehajBrand } from '@/components/brand/sehaj-brand';
 import { HeritageExperience } from '@/components/heritage/heritage-experience';
 
 import {
@@ -230,6 +228,14 @@ async function sharedAccountRequest<T extends object>(
   return { response, payload };
 }
 
+function sangatRequestHeaders(includeJson = false) {
+  const headers = new Headers();
+  if (includeJson) headers.set('Content-Type', 'application/json');
+  const token = localStorage.getItem(SHARED_ACCOUNT_TOKEN_KEY) || '';
+  if (token) headers.set('X-Sehaj-Account-Token', token);
+  return headers;
+}
+
 function removeLocalDuplicateAccount(username: string) {
   const normalized = normalizeLocalUsername(username);
   const remaining = readLocalAccounts().filter(
@@ -299,52 +305,6 @@ function normalizeLocalUsername(value: string) {
   return value.trim().toLowerCase().replace(/[^a-z0-9_]/g, '').slice(0, 24);
 }
 
-async function registerLocalAccount(
-  usernameInput: string,
-  displayNameInput: string,
-  password: string,
-): Promise<Account> {
-  const username = normalizeLocalUsername(usernameInput);
-  const displayName = displayNameInput.trim().replace(/\s+/g, ' ').slice(0, 48);
-
-  if (!/^[a-z0-9_]{3,24}$/.test(username)) {
-    throw new Error('Username must be 3–24 letters, numbers, or underscores.');
-  }
-  if (displayName.length < 2) {
-    throw new Error('Please enter your name.');
-  }
-  if (password.length < 8 || password.length > 128) {
-    throw new Error('Password must be 8–128 characters.');
-  }
-
-  const accounts = readLocalAccounts();
-  if (accounts.some((item) => item.username === username)) {
-    throw new Error('That username is already registered on this device.');
-  }
-
-  const passwordSalt = localBytesToHex(
-    crypto.getRandomValues(new Uint8Array(16)),
-  );
-  const passwordHash = await localPasswordHash(password, passwordSalt);
-  const account: Account = {
-    id: crypto.randomUUID(),
-    username,
-    displayName,
-  };
-
-  writeLocalAccounts([
-    ...accounts,
-    {
-      ...account,
-      passwordHash,
-      passwordSalt,
-      passwordIterations: LOCAL_PASSWORD_ITERATIONS,
-    },
-  ]);
-  localStorage.setItem(LOCAL_SESSION_KEY, account.id);
-  return account;
-}
-
 async function loginLocalAccount(
   usernameInput: string,
   password: string,
@@ -371,23 +331,6 @@ async function loginLocalAccount(
   };
   localStorage.setItem(LOCAL_SESSION_KEY, account.id);
   return account;
-}
-
-function readLocalSessionAccount(): Account | null {
-  try {
-    const accountId = localStorage.getItem(LOCAL_SESSION_KEY);
-    if (!accountId) return null;
-    const record = readLocalAccounts().find((item) => item.id === accountId);
-    return record
-      ? {
-          id: record.id,
-          username: record.username,
-          displayName: record.displayName,
-        }
-      : null;
-  } catch {
-    return null;
-  }
 }
 
 const STORE_NAME = 'state';
@@ -591,7 +534,7 @@ export default function Home() {
     [locale],
   );
 
-  function goToView(next: View) {
+  const goToView = useCallback((next: View) => {
     const update = () => {
       setActiveView(next);
       window.requestAnimationFrame(() => {
@@ -610,7 +553,7 @@ export default function Home() {
     }
 
     update();
-  }
+  }, []);
 
   const todayRecord = records[today] ?? {
     jaap: 0,
@@ -742,7 +685,7 @@ export default function Home() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [goToView]);
 
   useEffect(() => {
     if (!hydrated || !account || stateOwnerId !== account.id) return;
@@ -997,7 +940,7 @@ export default function Home() {
           encodeURIComponent(code) +
           '&date=' +
           encodeURIComponent(today),
-        { cache: 'no-store' },
+        { cache: 'no-store', headers: sangatRequestHeaders() },
       );
       const payload = await readApiJson<{
         group?: GroupData;
@@ -1036,7 +979,7 @@ export default function Home() {
       try {
         const response = await fetch('/api/sangat', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: sangatRequestHeaders(true),
           body: JSON.stringify({
             action: 'remove_member',
             code: currentMembership.code,
@@ -1078,7 +1021,7 @@ export default function Home() {
     try {
       const response = await fetch('/api/sangat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: sangatRequestHeaders(true),
         body: JSON.stringify({
           action: 'contribute',
           code: currentMembership.code,
@@ -1219,6 +1162,7 @@ export default function Home() {
     return true;
   }, [
     flushGroup,
+    goToView,
     settings.dailyGoal,
     settings.malaSize,
     today,
@@ -1269,7 +1213,7 @@ export default function Home() {
     setActiveFocus(false);
     setFocusRunStartedAt(null);
     void document.exitFullscreen?.().catch(() => undefined);
-  }, [appendSession, focusElapsed, focusMode, pacedAuto, sessionCount]);
+  }, [appendSession, focusElapsed, focusMode, goToView, pacedAuto, sessionCount]);
 
   useEffect(() => {
     if (!activeFocus || paused) return;
@@ -1441,7 +1385,7 @@ export default function Home() {
       const action = groupMode;
       const response = await fetch('/api/sangat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: sangatRequestHeaders(true),
         body: JSON.stringify({
           action,
           code: inviteInput,
@@ -1793,12 +1737,12 @@ export default function Home() {
               </div>
 
               <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-xs font-medium text-white/62">
-                <a className="underline-offset-4 hover:underline" href="/privacy">
+                <Link className="underline-offset-4 hover:underline" href="/privacy">
                   {tr('Privacy', 'ਪਰਦੇਦਾਰੀ')}
-                </a>
-                <a className="underline-offset-4 hover:underline" href="/security">
+                </Link>
+                <Link className="underline-offset-4 hover:underline" href="/security">
                   {tr('Security', 'ਸੁਰੱਖਿਆ')}
-                </a>
+                </Link>
               </div>
             </div>
           </div>
@@ -2665,8 +2609,8 @@ export default function Home() {
                 <Image
                   alt="A respectful view of the open Guru Granth Sahib Ji"
                   className="focus-setup-respect-image"
-                  width={2048}
-                  height={1269}
+                  width={3648}
+                  height={1879}
                   priority
                   quality={94}
                   sizes="(max-width: 800px) 100vw, 62vw"
